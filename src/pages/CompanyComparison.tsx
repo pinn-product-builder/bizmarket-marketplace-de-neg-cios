@@ -14,8 +14,10 @@ import { ComparisonLineChart } from "@/components/charts/ComparisonLineChart";
 import { ComparisonBarChart } from "@/components/charts/ComparisonBarChart";
 import { ComparisonRadarChart } from "@/components/charts/ComparisonRadarChart";
 import { ComparisonInsights } from "@/components/charts/ComparisonInsights";
+import { CompanyScoreCard } from "@/components/charts/CompanyScoreCard";
 import { getCombinedHistoricalData, CHART_COLORS } from "@/lib/mock-comparison-data";
 import { getAverageBenchmark } from "@/lib/sector-benchmarks";
+import { calculateCompanyScore } from "@/lib/company-scoring";
 import {
   ArrowLeft,
   X,
@@ -34,6 +36,7 @@ import {
   LineChart as LineChartIcon,
   Radar as RadarIcon,
   Target,
+  Trophy,
 } from "lucide-react";
 
 // Mock data para informações adicionais (normalmente viria de API)
@@ -239,6 +242,14 @@ export default function CompanyComparison() {
     },
   ];
 
+  // Calculate scores for all companies
+  const companyScores = companies
+    .map((company) => {
+      const details = getMockCompanyDetails(company.id);
+      return calculateCompanyScore(company.id, company.companyName, details);
+    })
+    .sort((a, b) => b.totalScore - a.totalScore); // Sort by score descending
+
   const content = (
     <div className={isAuthenticated ? "p-4 md:p-8" : ""}>
       <div className={isAuthenticated ? "max-w-7xl mx-auto" : "container mx-auto px-4 lg:px-8"}>
@@ -295,6 +306,30 @@ export default function CompanyComparison() {
           <div className="space-y-8">
             {/* Insights Section */}
             <ComparisonInsights companies={companies} />
+
+            {/* Scores Section */}
+            <div>
+              <h2 className="text-2xl font-heading font-bold mb-4 flex items-center gap-2">
+                <Trophy className="w-6 h-6 text-warning" />
+                Pontuação Geral
+              </h2>
+              <p className="text-sm text-muted-foreground mb-6">
+                Score calculado com base em métricas financeiras (40%), operacionais (30%) e jurídicas (30%)
+              </p>
+              <div className={`grid gap-4 ${
+                companies.length === 1 ? 'lg:grid-cols-1 max-w-md mx-auto' : 
+                companies.length === 2 ? 'lg:grid-cols-2' : 
+                'lg:grid-cols-3'
+              }`}>
+                {companyScores.map((score, index) => (
+                  <CompanyScoreCard
+                    key={score.companyId}
+                    score={score}
+                    rank={index + 1}
+                  />
+                ))}
+              </div>
+            </div>
 
             {/* Radar Chart - Multi-dimensional Comparison */}
             <Card className="border-2">
