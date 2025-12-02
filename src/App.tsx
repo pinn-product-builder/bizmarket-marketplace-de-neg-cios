@@ -20,6 +20,7 @@ import MyInterests from "./pages/dashboard/buyer/MyInterests";
 import Users from "./pages/dashboard/admin/Users";
 import Reports from "./pages/dashboard/admin/Reports";
 import PendingCompanies from "./pages/dashboard/admin/PendingCompanies";
+import AdminCompanyDetails from "./pages/dashboard/admin/CompanyDetails";
 import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -54,6 +55,7 @@ const App = () => (
             {/* Admin Routes */}
             <Route path="/dashboard/admin" element={<AdminDashboard />} />
             <Route path="/dashboard/admin/pending" element={<PendingCompanies />} />
+            <Route path="/dashboard/admin/pending/:id" element={<AdminCompanyDetails />} />
             <Route path="/dashboard/admin/users" element={<Users />} />
             <Route path="/dashboard/admin/reports" element={<Reports />} />
             

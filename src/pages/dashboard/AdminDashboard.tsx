@@ -168,9 +168,16 @@ export default function AdminDashboard() {
                         </div>
 
                         <div className="flex gap-2">
-                          <Button variant="outline" size="sm" className="flex-1">
-                            <Eye className="w-4 h-4 mr-2" />
-                            Ver Detalhes
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex-1"
+                            asChild
+                          >
+                            <a href={`/dashboard/admin/pending/${company.id}`}>
+                              <Eye className="w-4 h-4 mr-2" />
+                              Ver Detalhes
+                            </a>
                           </Button>
                           <Button variant="default" size="sm" className="bg-success hover:bg-success">
                             <CheckCircle2 className="w-4 h-4 mr-2" />
