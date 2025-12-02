@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   getComparisonHistory,
   deleteComparisonFromHistory,
@@ -19,7 +27,8 @@ import {
   formatTimestamp,
   ComparisonHistoryItem,
 } from "@/lib/comparison-history";
-import { History, Trash2, Clock, Building2, Scale, AlertCircle } from "lucide-react";
+import { WEIGHT_PRESETS } from "@/lib/company-scoring";
+import { History, Trash2, Clock, Building2, Scale, AlertCircle, Search, Filter, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface ComparisonHistoryDialogProps {
@@ -29,6 +38,10 @@ interface ComparisonHistoryDialogProps {
 export const ComparisonHistoryDialog = ({ onLoadComparison }: ComparisonHistoryDialogProps) => {
   const [open, setOpen] = useState(false);
   const [history, setHistory] = useState<ComparisonHistoryItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [presetFilter, setPresetFilter] = useState<string>("all");
+  const [periodFilter, setPeriodFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"recent" | "oldest">("recent");
 
   useEffect(() => {
     if (open) {
@@ -40,6 +53,66 @@ export const ComparisonHistoryDialog = ({ onLoadComparison }: ComparisonHistoryD
     const items = getComparisonHistory();
     setHistory(items);
   };
+
+  // Filter and sort history
+  const filteredHistory = useMemo(() => {
+    let filtered = [...history];
+
+    // Search by company name
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((item) =>
+        item.companyNames.some((name) => name.toLowerCase().includes(query))
+      );
+    }
+
+    // Filter by preset
+    if (presetFilter !== "all") {
+      filtered = filtered.filter((item) => item.presetUsed === presetFilter);
+    }
+
+    // Filter by period
+    if (periodFilter !== "all") {
+      const now = Date.now();
+      const dayMs = 24 * 60 * 60 * 1000;
+      
+      filtered = filtered.filter((item) => {
+        const diff = now - item.timestamp;
+        
+        switch (periodFilter) {
+          case "today":
+            return diff < dayMs;
+          case "week":
+            return diff < 7 * dayMs;
+          case "month":
+            return diff < 30 * dayMs;
+          default:
+            return true;
+        }
+      });
+    }
+
+    // Sort
+    filtered.sort((a, b) => {
+      if (sortBy === "recent") {
+        return b.timestamp - a.timestamp;
+      } else {
+        return a.timestamp - b.timestamp;
+      }
+    });
+
+    return filtered;
+  }, [history, searchQuery, presetFilter, periodFilter, sortBy]);
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchQuery("");
+    setPresetFilter("all");
+    setPeriodFilter("all");
+    setSortBy("recent");
+  };
+
+  const hasActiveFilters = searchQuery || presetFilter !== "all" || periodFilter !== "all";
 
   const handleLoadComparison = (item: ComparisonHistoryItem) => {
     onLoadComparison(item);
@@ -81,6 +154,105 @@ export const ComparisonHistoryDialog = ({ onLoadComparison }: ComparisonHistoryD
           </DialogDescription>
         </DialogHeader>
 
+        {/* Search and Filters */}
+        {history.length > 0 && (
+          <div className="space-y-3">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por empresa..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 pr-9"
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7"
+                  onClick={() => setSearchQuery("")}
+                >
+                  <X className="w-3.5 h-3.5" />
+                </Button>
+              )}
+            </div>
+
+            {/* Filters Row */}
+            <div className="flex flex-wrap gap-2">
+              {/* Preset Filter */}
+              <Select value={presetFilter} onValueChange={setPresetFilter}>
+                <SelectTrigger className="w-[180px] h-9">
+                  <Filter className="w-3.5 h-3.5 mr-2" />
+                  <SelectValue placeholder="Preset" />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  <SelectItem value="all">Todos os presets</SelectItem>
+                  <SelectItem value="balanced">Balanceado</SelectItem>
+                  <SelectItem value="financialFocus">Foco Financeiro</SelectItem>
+                  <SelectItem value="operationalFocus">Foco Operacional</SelectItem>
+                  <SelectItem value="legalFocus">Foco Jurídico</SelectItem>
+                  <SelectItem value="growth">Crescimento</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Period Filter */}
+              <Select value={periodFilter} onValueChange={setPeriodFilter}>
+                <SelectTrigger className="w-[160px] h-9">
+                  <Clock className="w-3.5 h-3.5 mr-2" />
+                  <SelectValue placeholder="Período" />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  <SelectItem value="all">Todos os períodos</SelectItem>
+                  <SelectItem value="today">Hoje</SelectItem>
+                  <SelectItem value="week">Última semana</SelectItem>
+                  <SelectItem value="month">Último mês</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Sort */}
+              <Select value={sortBy} onValueChange={(v) => setSortBy(v as "recent" | "oldest")}>
+                <SelectTrigger className="w-[140px] h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  <SelectItem value="recent">Mais recentes</SelectItem>
+                  <SelectItem value="oldest">Mais antigos</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Clear Filters */}
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="h-9"
+                >
+                  <X className="w-3.5 h-3.5 mr-1.5" />
+                  Limpar Filtros
+                </Button>
+              )}
+            </div>
+
+            {/* Results Count */}
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>
+                {filteredHistory.length} de {history.length} {history.length === 1 ? "comparação" : "comparações"}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearAll}
+                className="h-7 text-destructive hover:text-destructive"
+              >
+                <Trash2 className="w-3 h-3 mr-1" />
+                Limpar Tudo
+              </Button>
+            </div>
+          </div>
+        )}
+
         {history.length === 0 ? (
           <div className="py-12 text-center">
             <div className="w-16 h-16 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
@@ -91,23 +263,24 @@ export const ComparisonHistoryDialog = ({ onLoadComparison }: ComparisonHistoryD
               Suas comparações futuras aparecerão aqui automaticamente
             </p>
           </div>
+        ) : filteredHistory.length === 0 ? (
+          <div className="py-12 text-center">
+            <div className="w-16 h-16 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
+              <Search className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Nenhuma comparação encontrada</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Tente ajustar seus filtros de busca
+            </p>
+            <Button variant="outline" size="sm" onClick={clearFilters}>
+              Limpar Filtros
+            </Button>
+          </div>
         ) : (
           <>
-            <div className="flex justify-end mb-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleClearAll}
-                className="text-destructive hover:text-destructive"
-              >
-                <Trash2 className="w-3.5 h-3.5 mr-1.5" />
-                Limpar Tudo
-              </Button>
-            </div>
-
             <ScrollArea className="h-[50vh] pr-4">
               <div className="space-y-3">
-                {history.map((item) => (
+                {filteredHistory.map((item) => (
                   <Card
                     key={item.id}
                     className="cursor-pointer hover:border-primary transition-all hover:shadow-md"
