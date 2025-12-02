@@ -7,8 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useComparison } from "@/contexts/ComparisonContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { ComparisonLineChart } from "@/components/charts/ComparisonLineChart";
+import { ComparisonBarChart } from "@/components/charts/ComparisonBarChart";
+import { ComparisonInsights } from "@/components/charts/ComparisonInsights";
+import { getCombinedHistoricalData, CHART_COLORS } from "@/lib/mock-comparison-data";
 import {
   ArrowLeft,
   X,
@@ -23,6 +28,8 @@ import {
   Scale,
   DollarSign,
   CalendarDays,
+  BarChart3,
+  LineChart as LineChartIcon,
 } from "lucide-react";
 
 // Mock data para informações adicionais (normalmente viria de API)
@@ -126,6 +133,30 @@ export default function CompanyComparison() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
+  // Prepare chart data
+  const historicalData = companies.length > 0 
+    ? getCombinedHistoricalData(companies.map((c) => c.id))
+    : [];
+
+  // Prepare data keys for charts
+  const revenueDataKeys = companies.map((company, index) => ({
+    key: `revenue${index}`,
+    name: company.companyName,
+    color: CHART_COLORS[index],
+  }));
+
+  const employeesDataKeys = companies.map((company, index) => ({
+    key: `employees${index}`,
+    name: company.companyName,
+    color: CHART_COLORS[index],
+  }));
+
+  const profitMarginDataKeys = companies.map((company, index) => ({
+    key: `profitMargin${index}`,
+    name: company.companyName,
+    color: CHART_COLORS[index],
+  }));
+
   const content = (
     <div className={isAuthenticated ? "p-4 md:p-8" : ""}>
       <div className={isAuthenticated ? "max-w-7xl mx-auto" : "container mx-auto px-4 lg:px-8"}>
@@ -180,6 +211,121 @@ export default function CompanyComparison() {
         {/* Comparison Grid */}
         {companies.length > 0 && (
           <div className="space-y-8">
+            {/* Insights Section */}
+            <ComparisonInsights companies={companies} />
+
+            {/* Charts Section */}
+            <Card className="border-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-primary" />
+                  Análise Histórica (2021-2024)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="revenue" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3 mb-4">
+                    <TabsTrigger value="revenue">
+                      <DollarSign className="w-4 h-4 mr-2" />
+                      Faturamento
+                    </TabsTrigger>
+                    <TabsTrigger value="employees">
+                      <Users className="w-4 h-4 mr-2" />
+                      Funcionários
+                    </TabsTrigger>
+                    <TabsTrigger value="profit">
+                      <TrendingUp className="w-4 h-4 mr-2" />
+                      Margem de Lucro
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="revenue" className="space-y-4">
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-semibold flex items-center gap-2">
+                        <LineChartIcon className="w-4 h-4" />
+                        Evolução do Faturamento Anual (R$ Milhões)
+                      </h4>
+                      <ComparisonLineChart
+                        data={historicalData}
+                        dataKeys={revenueDataKeys}
+                        yAxisLabel="Faturamento (R$ M)"
+                        height={350}
+                      />
+                    </div>
+                    <Separator />
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-semibold flex items-center gap-2">
+                        <BarChart3 className="w-4 h-4" />
+                        Comparação por Período
+                      </h4>
+                      <ComparisonBarChart
+                        data={historicalData}
+                        dataKeys={revenueDataKeys}
+                        yAxisLabel="Faturamento (R$ M)"
+                        height={300}
+                      />
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="employees" className="space-y-4">
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-semibold flex items-center gap-2">
+                        <LineChartIcon className="w-4 h-4" />
+                        Crescimento do Quadro de Funcionários
+                      </h4>
+                      <ComparisonLineChart
+                        data={historicalData}
+                        dataKeys={employeesDataKeys}
+                        yAxisLabel="Funcionários"
+                        height={350}
+                      />
+                    </div>
+                    <Separator />
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-semibold flex items-center gap-2">
+                        <BarChart3 className="w-4 h-4" />
+                        Comparação por Período
+                      </h4>
+                      <ComparisonBarChart
+                        data={historicalData}
+                        dataKeys={employeesDataKeys}
+                        yAxisLabel="Funcionários"
+                        height={300}
+                      />
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="profit" className="space-y-4">
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-semibold flex items-center gap-2">
+                        <LineChartIcon className="w-4 h-4" />
+                        Evolução da Margem de Lucro (%)
+                      </h4>
+                      <ComparisonLineChart
+                        data={historicalData}
+                        dataKeys={profitMarginDataKeys}
+                        yAxisLabel="Margem (%)"
+                        height={350}
+                      />
+                    </div>
+                    <Separator />
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-semibold flex items-center gap-2">
+                        <BarChart3 className="w-4 h-4" />
+                        Comparação por Período
+                      </h4>
+                      <ComparisonBarChart
+                        data={historicalData}
+                        dataKeys={profitMarginDataKeys}
+                        yAxisLabel="Margem (%)"
+                        height={300}
+                      />
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+
             {/* Companies Cards */}
             <div className={`grid gap-4 ${
               companies.length === 1 ? 'lg:grid-cols-1 max-w-2xl mx-auto' : 
