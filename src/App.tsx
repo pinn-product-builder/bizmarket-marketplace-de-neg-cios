@@ -16,6 +16,8 @@ import CompanyWizard from "./pages/dashboard/seller/CompanyWizard";
 import CompanyInterests from "./pages/dashboard/seller/CompanyInterests";
 import BuyerDashboard from "./pages/dashboard/buyer/BuyerDashboard";
 import MyInterests from "./pages/dashboard/buyer/MyInterests";
+import Users from "./pages/dashboard/admin/Users";
+import Reports from "./pages/dashboard/admin/Reports";
 import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -48,6 +50,8 @@ const App = () => (
             
             {/* Admin Routes */}
             <Route path="/dashboard/admin" element={<AdminDashboard />} />
+            <Route path="/dashboard/admin/users" element={<Users />} />
+            <Route path="/dashboard/admin/reports" element={<Reports />} />
             
             {/* Shared Routes */}
             <Route path="/messages" element={<Messages />} />
