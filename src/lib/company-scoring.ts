@@ -30,12 +30,18 @@ interface CompanyDetails {
   revenue: string;
 }
 
-// Pesos para cada categoria (somam 100%)
-const WEIGHTS = {
+// Pesos padrão para cada categoria (somam 100%)
+export const DEFAULT_WEIGHTS = {
   financial: 0.40, // 40%
   operational: 0.30, // 30%
   legal: 0.30, // 30%
 };
+
+export interface CategoryWeights {
+  financial: number;
+  operational: number;
+  legal: number;
+}
 
 // Pesos individuais dentro de cada categoria
 const METRIC_WEIGHTS = {
@@ -122,20 +128,21 @@ const calculateLegalScore = (details: CompanyDetails): { score: number; breakdow
   };
 };
 
-// Calcula score total de uma empresa
+// Calcula score total de uma empresa com pesos customizáveis
 export const calculateCompanyScore = (
   companyId: string,
   companyName: string,
-  details: CompanyDetails
+  details: CompanyDetails,
+  weights: CategoryWeights = DEFAULT_WEIGHTS
 ): CompanyScore => {
   const financial = calculateFinancialScore(details);
   const operational = calculateOperationalScore(details);
   const legal = calculateLegalScore(details);
   
   const totalScore = 
-    financial.score * WEIGHTS.financial +
-    operational.score * WEIGHTS.operational +
-    legal.score * WEIGHTS.legal;
+    financial.score * weights.financial +
+    operational.score * weights.operational +
+    legal.score * weights.legal;
   
   return {
     companyId,

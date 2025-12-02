@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Slider } from "@/components/ui/slider";
 import { useComparison } from "@/contexts/ComparisonContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { ComparisonLineChart } from "@/components/charts/ComparisonLineChart";
@@ -17,7 +18,7 @@ import { ComparisonInsights } from "@/components/charts/ComparisonInsights";
 import { CompanyScoreCard } from "@/components/charts/CompanyScoreCard";
 import { getCombinedHistoricalData, CHART_COLORS } from "@/lib/mock-comparison-data";
 import { getAverageBenchmark } from "@/lib/sector-benchmarks";
-import { calculateCompanyScore } from "@/lib/company-scoring";
+import { calculateCompanyScore, DEFAULT_WEIGHTS, CategoryWeights } from "@/lib/company-scoring";
 import {
   ArrowLeft,
   X,
@@ -37,6 +38,8 @@ import {
   Radar as RadarIcon,
   Target,
   Trophy,
+  Settings,
+  RotateCcw,
 } from "lucide-react";
 
 // Mock data para informações adicionais (normalmente viria de API)
@@ -140,6 +143,42 @@ export default function CompanyComparison() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [yearsFilter, setYearsFilter] = useState<1 | 2 | 3>(3);
+  const [customWeights, setCustomWeights] = useState<CategoryWeights>(DEFAULT_WEIGHTS);
+  const [showWeightSettings, setShowWeightSettings] = useState(false);
+
+  // Reset weights to default
+  const resetWeights = () => {
+    setCustomWeights(DEFAULT_WEIGHTS);
+  };
+
+  // Update weight and adjust others to maintain 100% total
+  const updateWeight = (category: keyof CategoryWeights, value: number) => {
+    const newValue = value / 100; // Convert from 0-100 to 0-1
+    const otherCategories = (Object.keys(customWeights) as Array<keyof CategoryWeights>)
+      .filter(k => k !== category);
+    
+    // Calculate remaining weight
+    const remaining = 1 - newValue;
+    
+    // Distribute remaining proportionally to other categories
+    const currentOthersTotal = otherCategories.reduce((sum, key) => sum + customWeights[key], 0);
+    
+    const newWeights = { ...customWeights, [category]: newValue };
+    
+    if (currentOthersTotal > 0) {
+      otherCategories.forEach(key => {
+        newWeights[key] = (customWeights[key] / currentOthersTotal) * remaining;
+      });
+    } else {
+      // If others are 0, distribute equally
+      const equalShare = remaining / otherCategories.length;
+      otherCategories.forEach(key => {
+        newWeights[key] = equalShare;
+      });
+    }
+    
+    setCustomWeights(newWeights);
+  };
 
   // Prepare chart data with year filter
   const historicalData = companies.length > 0 
@@ -242,11 +281,11 @@ export default function CompanyComparison() {
     },
   ];
 
-  // Calculate scores for all companies
+  // Calculate scores for all companies with custom weights
   const companyScores = companies
     .map((company) => {
       const details = getMockCompanyDetails(company.id);
-      return calculateCompanyScore(company.id, company.companyName, details);
+      return calculateCompanyScore(company.id, company.companyName, details, customWeights);
     })
     .sort((a, b) => b.totalScore - a.totalScore); // Sort by score descending
 
@@ -309,12 +348,109 @@ export default function CompanyComparison() {
 
             {/* Scores Section */}
             <div>
-              <h2 className="text-2xl font-heading font-bold mb-4 flex items-center gap-2">
-                <Trophy className="w-6 h-6 text-warning" />
-                Pontuação Geral
-              </h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-heading font-bold flex items-center gap-2">
+                  <Trophy className="w-6 h-6 text-warning" />
+                  Pontuação Geral
+                </h2>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowWeightSettings(!showWeightSettings)}
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Ajustar Pesos
+                </Button>
+              </div>
+
+              {/* Weight Settings Panel */}
+              {showWeightSettings && (
+                <Card className="mb-6 border-2 bg-muted/30 animate-fade-in">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">Personalizar Pesos das Categorias</CardTitle>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={resetWeights}
+                        className="h-8"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
+                        Restaurar Padrão
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Ajuste a importância de cada categoria no cálculo do score total (soma = 100%)
+                    </p>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Financial Weight */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="w-4 h-4 text-success" />
+                          <label className="text-sm font-medium">Financeiro</label>
+                        </div>
+                        <Badge variant="secondary" className="font-mono">
+                          {Math.round(customWeights.financial * 100)}%
+                        </Badge>
+                      </div>
+                      <Slider
+                        value={[customWeights.financial * 100]}
+                        onValueChange={(value) => updateWeight('financial', value[0])}
+                        max={100}
+                        step={5}
+                        className="w-full"
+                      />
+                    </div>
+
+                    {/* Operational Weight */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Briefcase className="w-4 h-4 text-secondary" />
+                          <label className="text-sm font-medium">Operacional</label>
+                        </div>
+                        <Badge variant="secondary" className="font-mono">
+                          {Math.round(customWeights.operational * 100)}%
+                        </Badge>
+                      </div>
+                      <Slider
+                        value={[customWeights.operational * 100]}
+                        onValueChange={(value) => updateWeight('operational', value[0])}
+                        max={100}
+                        step={5}
+                        className="w-full"
+                      />
+                    </div>
+
+                    {/* Legal Weight */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Scale className="w-4 h-4 text-warning" />
+                          <label className="text-sm font-medium">Jurídico</label>
+                        </div>
+                        <Badge variant="secondary" className="font-mono">
+                          {Math.round(customWeights.legal * 100)}%
+                        </Badge>
+                      </div>
+                      <Slider
+                        value={[customWeights.legal * 100]}
+                        onValueChange={(value) => updateWeight('legal', value[0])}
+                        max={100}
+                        step={5}
+                        className="w-full"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               <p className="text-sm text-muted-foreground mb-6">
-                Score calculado com base em métricas financeiras (40%), operacionais (30%) e jurídicas (30%)
+                Score calculado com base em métricas financeiras ({Math.round(customWeights.financial * 100)}%), 
+                operacionais ({Math.round(customWeights.operational * 100)}%) e 
+                jurídicas ({Math.round(customWeights.legal * 100)}%)
               </p>
               <div className={`grid gap-4 ${
                 companies.length === 1 ? 'lg:grid-cols-1 max-w-md mx-auto' : 
