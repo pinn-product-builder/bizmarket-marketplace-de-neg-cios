@@ -49,7 +49,7 @@ export function DashboardSidebar() {
 
   const sellerItems = [
     { title: "Dashboard", url: "/dashboard/seller", icon: LayoutDashboard, badge: 0 },
-    { title: "Minhas Empresas", url: "/dashboard/seller", icon: Building2, badge: 0 },
+    { title: "Minhas Empresas", url: "/dashboard/seller/companies", icon: Building2, badge: 0 },
     { title: "Cadastrar Empresa", url: "/dashboard/seller/companies/new", icon: PlusCircle, badge: 0 },
     { title: "Mensagens", url: "/messages", icon: MessageSquare, badge: notifications.messages, badgeType: "messages" as const },
     { title: "Perfil", url: "/profile", icon: User, badge: 0 },
@@ -64,7 +64,7 @@ export function DashboardSidebar() {
 
   const adminItems = [
     { title: "Dashboard", url: "/dashboard/admin", icon: LayoutDashboard, badge: 0 },
-    { title: "Empresas Pendentes", url: "/dashboard/admin", icon: CheckCircle, badge: notifications.pendingApprovals, badgeType: "pendingApprovals" as const },
+    { title: "Empresas Pendentes", url: "/dashboard/admin/pending", icon: CheckCircle, badge: notifications.pendingApprovals, badgeType: "pendingApprovals" as const },
     { title: "Todas Empresas", url: "/marketplace", icon: Building2, badge: 0 },
     { title: "Usuários", url: "/dashboard/admin/users", icon: Users, badge: 0 },
     { title: "Relatórios", url: "/dashboard/admin/reports", icon: BarChart3, badge: 0 },

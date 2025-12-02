@@ -14,10 +14,12 @@ import SellerDashboard from "./pages/dashboard/SellerDashboard";
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
 import CompanyWizard from "./pages/dashboard/seller/CompanyWizard";
 import CompanyInterests from "./pages/dashboard/seller/CompanyInterests";
+import MyCompanies from "./pages/dashboard/seller/MyCompanies";
 import BuyerDashboard from "./pages/dashboard/buyer/BuyerDashboard";
 import MyInterests from "./pages/dashboard/buyer/MyInterests";
 import Users from "./pages/dashboard/admin/Users";
 import Reports from "./pages/dashboard/admin/Reports";
+import PendingCompanies from "./pages/dashboard/admin/PendingCompanies";
 import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -41,6 +43,7 @@ const App = () => (
             
             {/* Seller Routes */}
             <Route path="/dashboard/seller" element={<SellerDashboard />} />
+            <Route path="/dashboard/seller/companies" element={<MyCompanies />} />
             <Route path="/dashboard/seller/companies/new" element={<CompanyWizard />} />
             <Route path="/dashboard/seller/companies/:id/interests" element={<CompanyInterests />} />
             
@@ -50,6 +53,7 @@ const App = () => (
             
             {/* Admin Routes */}
             <Route path="/dashboard/admin" element={<AdminDashboard />} />
+            <Route path="/dashboard/admin/pending" element={<PendingCompanies />} />
             <Route path="/dashboard/admin/users" element={<Users />} />
             <Route path="/dashboard/admin/reports" element={<Reports />} />
             

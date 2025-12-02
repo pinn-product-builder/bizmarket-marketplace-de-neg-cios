@@ -114,25 +114,30 @@ export default function SellerDashboard() {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6">
-            {/* Companies List */}
+            {/* Companies Preview */}
             <div className="lg:col-span-2">
               <Card className="border-2">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle className="text-2xl font-heading">Minhas Empresas</CardTitle>
-                      <CardDescription>Gerencie suas empresas cadastradas</CardDescription>
+                      <CardDescription>Visão geral das suas empresas</CardDescription>
                     </div>
-                    <Link to="/dashboard/seller/companies/new">
-                      <Button variant="default">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Nova Empresa
+                    <div className="flex gap-2">
+                      <Button variant="outline" asChild>
+                        <Link to="/dashboard/seller/companies">Ver todas</Link>
                       </Button>
-                    </Link>
+                      <Link to="/dashboard/seller/companies/new">
+                        <Button variant="default">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Nova Empresa
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {mockCompanies.map((company) => (
+                  {mockCompanies.slice(0, 2).map((company) => (
                     <Card key={company.id} className="border hover:shadow-md transition-shadow">
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between mb-3">
