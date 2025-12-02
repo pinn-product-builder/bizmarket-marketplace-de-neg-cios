@@ -24,6 +24,7 @@ import { ComparisonRadarChart } from "@/components/charts/ComparisonRadarChart";
 import { ComparisonInsights } from "@/components/charts/ComparisonInsights";
 import { CompanyScoreCard } from "@/components/charts/CompanyScoreCard";
 import { ComparisonHistoryDialog } from "@/components/charts/ComparisonHistoryDialog";
+import { ShareComparisonDialog } from "@/components/charts/ShareComparisonDialog";
 import { getCombinedHistoricalData, CHART_COLORS } from "@/lib/mock-comparison-data";
 import { getAverageBenchmark } from "@/lib/sector-benchmarks";
 import { calculateCompanyScore, DEFAULT_WEIGHTS, CategoryWeights, WEIGHT_PRESETS, WeightPresetKey } from "@/lib/company-scoring";
@@ -149,13 +150,80 @@ const getRiskBadge = (risk: string) => {
 };
 
 export default function CompanyComparison() {
-  const { companies, removeCompany, clearAll } = useComparison();
+  const { companies, removeCompany, clearAll, setCompanies } = useComparison();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [yearsFilter, setYearsFilter] = useState<1 | 2 | 3>(3);
   const [customWeights, setCustomWeights] = useState<CategoryWeights>(DEFAULT_WEIGHTS);
   const [showWeightSettings, setShowWeightSettings] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState<WeightPresetKey>("balanced");
+  const [shareNotes, setShareNotes] = useState<string>("");
+
+  // Encode comparison state to URL
+  const encodeComparisonState = () => {
+    const state = {
+      companies: companies.map(c => ({
+        id: c.id,
+        companyName: c.companyName,
+        sector: c.sector,
+        location: c.location,
+        revenue: c.revenue,
+        employees: c.employees,
+        description: c.description,
+      })),
+      weights: customWeights,
+      preset: selectedPreset,
+      notes: shareNotes,
+    };
+    const encoded = btoa(encodeURIComponent(JSON.stringify(state)));
+    return `${window.location.origin}/comparison?state=${encoded}`;
+  };
+
+  // Decode comparison state from URL
+  const decodeComparisonState = (encoded: string) => {
+    try {
+      const decoded = JSON.parse(decodeURIComponent(atob(encoded)));
+      return decoded;
+    } catch (error) {
+      console.error("Error decoding comparison state:", error);
+      return null;
+    }
+  };
+
+  // Load state from URL on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const stateParam = params.get("state");
+    
+    if (stateParam) {
+      const state = decodeComparisonState(stateParam);
+      if (state) {
+        // Restore companies
+        if (state.companies && Array.isArray(state.companies)) {
+          setCompanies(state.companies);
+        }
+        // Restore weights
+        if (state.weights) {
+          setCustomWeights(state.weights);
+        }
+        // Restore preset
+        if (state.preset) {
+          setSelectedPreset(state.preset);
+        }
+        // Restore notes
+        if (state.notes) {
+          setShareNotes(state.notes);
+        }
+        
+        toast.success("Comparação carregada com sucesso!");
+        
+        // Clean URL after loading
+        window.history.replaceState({}, "", "/comparison");
+      } else {
+        toast.error("Erro ao carregar comparação compartilhada");
+      }
+    }
+  }, [setCompanies]);
 
   // Save comparison to history when companies or weights change
   useEffect(() => {
@@ -362,7 +430,8 @@ export default function CompanyComparison() {
               </p>
             </div>
             {companies.length > 0 && (
-              <div className="flex gap-2 w-full sm:w-auto">
+              <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                <ShareComparisonDialog shareUrl={encodeComparisonState()} />
                 <ComparisonHistoryDialog onLoadComparison={handleLoadFromHistory} />
                 <Button variant="outline" onClick={clearAll} className="flex-1 sm:flex-initial">
                   <X className="w-4 h-4 mr-2" />

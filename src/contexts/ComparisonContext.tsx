@@ -17,6 +17,7 @@ interface ComparisonContextType {
   removeCompany: (id: string) => void;
   clearAll: () => void;
   isInComparison: (id: string) => boolean;
+  setCompanies: (companies: Company[]) => void;
 }
 
 const ComparisonContext = createContext<ComparisonContextType | undefined>(undefined);
@@ -72,7 +73,7 @@ export const ComparisonProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <ComparisonContext.Provider
-      value={{ companies, addCompany, removeCompany, clearAll, isInComparison }}
+      value={{ companies, addCompany, removeCompany, clearAll, isInComparison, setCompanies }}
     >
       {children}
     </ComparisonContext.Provider>
