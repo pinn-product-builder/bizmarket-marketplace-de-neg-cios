@@ -6,9 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, ArrowRight, Check, Building2, DollarSign, FileText, Upload } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Building2, DollarSign, FileText, Upload, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { AIBadge } from "@/components/ui/ai-badge";
+import { AILoading } from "@/components/ui/ai-loading";
+import { generateDescription } from "@/lib/mock-ai-service";
 
 const SECTORS = [
   "Tecnologia",
@@ -29,6 +32,7 @@ const STATES = [
 
 export default function CompanyWizard() {
   const [currentStep, setCurrentStep] = useState(1);
+  const [loadingAI, setLoadingAI] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -66,6 +70,36 @@ export default function CompanyWizard() {
       description: "Aguarde a aprovação do administrador para publicar no marketplace.",
     });
     navigate("/dashboard/seller");
+  };
+
+  const handleGenerateDescription = async () => {
+    if (!formData.sector || !formData.foundationYear || !formData.employees) {
+      toast({
+        title: "Dados insuficientes",
+        description: "Preencha setor, ano de fundação e número de funcionários primeiro.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoadingAI(true);
+    try {
+      const description = await generateDescription(formData);
+      handleInputChange("description", description);
+      toast({
+        title: "Descrição gerada!",
+        description: "A IA criou uma descrição profissional. Você pode editá-la.",
+      });
+    } catch (error) {
+      console.error("AI generation error:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível gerar a descrição. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingAI(false);
+    }
   };
 
   const renderStep = () => {
@@ -228,6 +262,31 @@ export default function CompanyWizard() {
               </div>
             </div>
 
+            {/* AI Description Generator Card */}
+            <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-secondary/5">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3 mb-4">
+                  <AIBadge />
+                  <div className="flex-1">
+                    <h4 className="font-semibold mb-1">Gerar Descrição com IA</h4>
+                    <p className="text-sm text-muted-foreground">
+                      A IA pode criar uma descrição profissional baseada nos dados informados nas etapas anteriores.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="secondary"
+                  onClick={handleGenerateDescription}
+                  disabled={loadingAI || !formData.sector || !formData.foundationYear}
+                  className="w-full gap-2"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Gerar Descrição Profissional
+                </Button>
+                {loadingAI && <AILoading className="mt-3" message="Gerando descrição..." />}
+              </CardContent>
+            </Card>
+
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="description">Descrição da Empresa *</Label>
@@ -235,7 +294,7 @@ export default function CompanyWizard() {
                   id="description"
                   value={formData.description}
                   onChange={(e) => handleInputChange("description", e.target.value)}
-                  placeholder="Descreva a empresa, sua história, clientes..."
+                  placeholder="Descreva a empresa, sua história, clientes... ou use a IA para gerar"
                   rows={5}
                 />
               </div>

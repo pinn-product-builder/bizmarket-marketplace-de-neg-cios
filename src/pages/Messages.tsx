@@ -6,8 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Search, ArrowLeft } from "lucide-react";
+import { Send, Search, ArrowLeft, Sparkles } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { AISuggestionCard } from "@/components/ui/ai-suggestion-card";
+import { AILoading } from "@/components/ui/ai-loading";
+import { generateChatResponse } from "@/lib/mock-ai-service";
 
 const mockConversations = [
   {
@@ -61,6 +64,8 @@ export default function Messages() {
   const [selectedChat, setSelectedChat] = useState(mockConversations[0]);
   const [messageText, setMessageText] = useState("");
   const [showChat, setShowChat] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
+  const [loadingAI, setLoadingAI] = useState(false);
   const isMobile = useIsMobile();
 
   const getInitials = (name: string) => {
@@ -88,6 +93,35 @@ export default function Messages() {
 
   const handleBackToList = () => {
     setShowChat(false);
+  };
+
+  const handleAISuggest = async () => {
+    if (mockMessages.length === 0) return;
+    
+    setLoadingAI(true);
+    try {
+      const lastMessage = mockMessages[mockMessages.length - 1];
+      const suggestion = await generateChatResponse({
+        lastMessage: lastMessage.text,
+        companyName: selectedChat.companyName,
+      });
+      setAiSuggestion(suggestion);
+    } catch (error) {
+      console.error("AI suggestion error:", error);
+    } finally {
+      setLoadingAI(false);
+    }
+  };
+
+  const handleAcceptSuggestion = () => {
+    if (aiSuggestion) {
+      setMessageText(aiSuggestion);
+      setAiSuggestion(null);
+    }
+  };
+
+  const handleRejectSuggestion = () => {
+    setAiSuggestion(null);
   };
 
   return (
@@ -198,8 +232,28 @@ export default function Messages() {
             </ScrollArea>
 
             {/* Message Input */}
-            <div className="border-t p-4 bg-muted/30">
+            <div className="border-t p-4 bg-muted/30 space-y-3">
+              {aiSuggestion && (
+                <AISuggestionCard
+                  suggestion={aiSuggestion}
+                  onAccept={handleAcceptSuggestion}
+                  onReject={handleRejectSuggestion}
+                  loading={loadingAI}
+                />
+              )}
+              
+              {loadingAI && <AILoading message="Gerando sugestão de resposta..." />}
+              
               <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleAISuggest}
+                  disabled={loadingAI || mockMessages.length === 0}
+                  title="Sugerir resposta com IA"
+                >
+                  <Sparkles className="w-4 h-4" />
+                </Button>
                 <Input
                   placeholder="Digite sua mensagem..."
                   value={messageText}
