@@ -24,12 +24,14 @@ import {
   getComparisonHistory,
   deleteComparisonFromHistory,
   clearComparisonHistory,
+  updateComparisonNotes,
   formatTimestamp,
   ComparisonHistoryItem,
 } from "@/lib/comparison-history";
 import { WEIGHT_PRESETS } from "@/lib/company-scoring";
-import { History, Trash2, Clock, Building2, Scale, AlertCircle, Search, Filter, X } from "lucide-react";
+import { History, Trash2, Clock, Building2, Scale, AlertCircle, Search, Filter, X, FileText, Edit2, Check } from "lucide-react";
 import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ComparisonHistoryDialogProps {
   onLoadComparison: (item: ComparisonHistoryItem) => void;
@@ -42,6 +44,8 @@ export const ComparisonHistoryDialog = ({ onLoadComparison }: ComparisonHistoryD
   const [presetFilter, setPresetFilter] = useState<string>("all");
   const [periodFilter, setPeriodFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"recent" | "oldest">("recent");
+  const [editingNotesId, setEditingNotesId] = useState<string | null>(null);
+  const [editingNotesText, setEditingNotesText] = useState("");
 
   useEffect(() => {
     if (open) {
@@ -133,6 +137,27 @@ export const ComparisonHistoryDialog = ({ onLoadComparison }: ComparisonHistoryD
       loadHistory();
       toast.success("Histórico limpo com sucesso");
     }
+  };
+
+  const handleStartEditingNotes = (item: ComparisonHistoryItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingNotesId(item.id);
+    setEditingNotesText(item.notes || "");
+  };
+
+  const handleSaveNotes = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    updateComparisonNotes(id, editingNotesText.trim());
+    loadHistory();
+    setEditingNotesId(null);
+    setEditingNotesText("");
+    toast.success("Nota salva com sucesso");
+  };
+
+  const handleCancelEditingNotes = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingNotesId(null);
+    setEditingNotesText("");
   };
 
   return (
@@ -335,17 +360,78 @@ export const ComparisonHistoryDialog = ({ onLoadComparison }: ComparisonHistoryD
                               Preset: {item.presetUsed}
                             </Badge>
                           )}
+
+                          {/* Notes section */}
+                          {editingNotesId === item.id ? (
+                            <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                                <FileText className="w-3.5 h-3.5" />
+                                Nota:
+                              </div>
+                              <Textarea
+                                value={editingNotesText}
+                                onChange={(e) => setEditingNotesText(e.target.value)}
+                                placeholder="Adicione observações importantes..."
+                                className="min-h-[80px] text-xs"
+                                autoFocus
+                              />
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  onClick={(e) => handleSaveNotes(item.id, e)}
+                                  className="h-7 text-xs"
+                                >
+                                  <Check className="w-3 h-3 mr-1" />
+                                  Salvar
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={handleCancelEditingNotes}
+                                  className="h-7 text-xs"
+                                >
+                                  Cancelar
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              {item.notes && (
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                                    <FileText className="w-3.5 h-3.5" />
+                                    Nota:
+                                  </div>
+                                  <p className="text-xs text-foreground/80 bg-muted/50 p-2 rounded">
+                                    {item.notes}
+                                  </p>
+                                </div>
+                              )}
+                            </>
+                          )}
                         </div>
 
-                        {/* Delete button */}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 flex-shrink-0"
-                          onClick={(e) => handleDelete(item.id, e)}
-                        >
-                          <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                        </Button>
+                        {/* Action buttons */}
+                        <div className="flex flex-col gap-1 flex-shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={(e) => handleStartEditingNotes(item, e)}
+                            title={item.notes ? "Editar nota" : "Adicionar nota"}
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={(e) => handleDelete(item.id, e)}
+                          >
+                            <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
