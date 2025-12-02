@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -17,14 +17,17 @@ import {
 } from "@/components/ui/tooltip";
 import { useComparison } from "@/contexts/ComparisonContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 import { ComparisonLineChart } from "@/components/charts/ComparisonLineChart";
 import { ComparisonBarChart } from "@/components/charts/ComparisonBarChart";
 import { ComparisonRadarChart } from "@/components/charts/ComparisonRadarChart";
 import { ComparisonInsights } from "@/components/charts/ComparisonInsights";
 import { CompanyScoreCard } from "@/components/charts/CompanyScoreCard";
+import { ComparisonHistoryDialog } from "@/components/charts/ComparisonHistoryDialog";
 import { getCombinedHistoricalData, CHART_COLORS } from "@/lib/mock-comparison-data";
 import { getAverageBenchmark } from "@/lib/sector-benchmarks";
 import { calculateCompanyScore, DEFAULT_WEIGHTS, CategoryWeights, WEIGHT_PRESETS, WeightPresetKey } from "@/lib/company-scoring";
+import { saveComparisonToHistory, ComparisonHistoryItem } from "@/lib/comparison-history";
 import {
   ArrowLeft,
   X,
@@ -46,6 +49,7 @@ import {
   Trophy,
   Settings,
   RotateCcw,
+  Save,
 } from "lucide-react";
 
 // Mock data para informações adicionais (normalmente viria de API)
@@ -152,6 +156,38 @@ export default function CompanyComparison() {
   const [customWeights, setCustomWeights] = useState<CategoryWeights>(DEFAULT_WEIGHTS);
   const [showWeightSettings, setShowWeightSettings] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState<WeightPresetKey>("balanced");
+
+  // Save comparison to history when companies or weights change
+  useEffect(() => {
+    if (companies.length > 0) {
+      const timeoutId = setTimeout(() => {
+        saveComparisonToHistory(
+          companies.map(c => c.id),
+          companies.map(c => c.companyName),
+          customWeights,
+          selectedPreset
+        );
+      }, 2000); // Debounce to avoid saving too frequently
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [companies, customWeights, selectedPreset]);
+
+  // Load comparison from history
+  const handleLoadFromHistory = (item: ComparisonHistoryItem) => {
+    // Set weights
+    setCustomWeights(item.weights);
+    if (item.presetUsed) {
+      setSelectedPreset(item.presetUsed as WeightPresetKey);
+    }
+
+    // Note: We can't restore the exact companies without a backend
+    // User will need to add them again from marketplace
+    toast.info(
+      "Pesos restaurados! Adicione as empresas novamente no Marketplace para recriar a comparação.",
+      { duration: 5000 }
+    );
+  };
 
   // Apply preset weights
   const applyPreset = (presetKey: WeightPresetKey) => {
@@ -326,10 +362,16 @@ export default function CompanyComparison() {
               </p>
             </div>
             {companies.length > 0 && (
-              <Button variant="outline" onClick={clearAll} className="w-full sm:w-auto">
-                <X className="w-4 h-4 mr-2" />
-                Limpar Todas
-              </Button>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <ComparisonHistoryDialog onLoadComparison={handleLoadFromHistory} />
+                <Button variant="outline" onClick={clearAll} className="flex-1 sm:flex-initial">
+                  <X className="w-4 h-4 mr-2" />
+                  Limpar Todas
+                </Button>
+              </div>
+            )}
+            {companies.length === 0 && (
+              <ComparisonHistoryDialog onLoadComparison={handleLoadFromHistory} />
             )}
           </div>
         </div>
