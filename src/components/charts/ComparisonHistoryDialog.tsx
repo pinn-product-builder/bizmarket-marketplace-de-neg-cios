@@ -25,11 +25,12 @@ import {
   deleteComparisonFromHistory,
   clearComparisonHistory,
   updateComparisonNotes,
+  updateComparisonTags,
   formatTimestamp,
   ComparisonHistoryItem,
 } from "@/lib/comparison-history";
 import { WEIGHT_PRESETS } from "@/lib/company-scoring";
-import { History, Trash2, Clock, Building2, Scale, AlertCircle, Search, Filter, X, FileText, Edit2, Check } from "lucide-react";
+import { History, Trash2, Clock, Building2, Scale, AlertCircle, Search, Filter, X, FileText, Edit2, Check, Tag, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -43,9 +44,13 @@ export const ComparisonHistoryDialog = ({ onLoadComparison }: ComparisonHistoryD
   const [searchQuery, setSearchQuery] = useState("");
   const [presetFilter, setPresetFilter] = useState<string>("all");
   const [periodFilter, setPeriodFilter] = useState<string>("all");
+  const [tagFilter, setTagFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"recent" | "oldest">("recent");
   const [editingNotesId, setEditingNotesId] = useState<string | null>(null);
   const [editingNotesText, setEditingNotesText] = useState("");
+  const [editingTagsId, setEditingTagsId] = useState<string | null>(null);
+  const [editingTagsText, setEditingTagsText] = useState("");
+  const [newTagInput, setNewTagInput] = useState<string>("");
 
   useEffect(() => {
     if (open) {
@@ -57,6 +62,15 @@ export const ComparisonHistoryDialog = ({ onLoadComparison }: ComparisonHistoryD
     const items = getComparisonHistory();
     setHistory(items);
   };
+
+  // Get all unique tags from history
+  const allTags = useMemo(() => {
+    const tagsSet = new Set<string>();
+    history.forEach((item) => {
+      item.tags?.forEach((tag) => tagsSet.add(tag));
+    });
+    return Array.from(tagsSet).sort();
+  }, [history]);
 
   // Filter and sort history
   const filteredHistory = useMemo(() => {
@@ -73,6 +87,13 @@ export const ComparisonHistoryDialog = ({ onLoadComparison }: ComparisonHistoryD
     // Filter by preset
     if (presetFilter !== "all") {
       filtered = filtered.filter((item) => item.presetUsed === presetFilter);
+    }
+
+    // Filter by tag
+    if (tagFilter !== "all") {
+      filtered = filtered.filter((item) => 
+        item.tags?.includes(tagFilter)
+      );
     }
 
     // Filter by period
@@ -106,17 +127,18 @@ export const ComparisonHistoryDialog = ({ onLoadComparison }: ComparisonHistoryD
     });
 
     return filtered;
-  }, [history, searchQuery, presetFilter, periodFilter, sortBy]);
+  }, [history, searchQuery, presetFilter, tagFilter, periodFilter, sortBy]);
 
   // Clear all filters
   const clearFilters = () => {
     setSearchQuery("");
     setPresetFilter("all");
     setPeriodFilter("all");
+    setTagFilter("all");
     setSortBy("recent");
   };
 
-  const hasActiveFilters = searchQuery || presetFilter !== "all" || periodFilter !== "all";
+  const hasActiveFilters = searchQuery || presetFilter !== "all" || periodFilter !== "all" || tagFilter !== "all";
 
   const handleLoadComparison = (item: ComparisonHistoryItem) => {
     onLoadComparison(item);
@@ -158,6 +180,55 @@ export const ComparisonHistoryDialog = ({ onLoadComparison }: ComparisonHistoryD
     e.stopPropagation();
     setEditingNotesId(null);
     setEditingNotesText("");
+  };
+
+  const handleStartEditingTags = (item: ComparisonHistoryItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingTagsId(item.id);
+    setNewTagInput("");
+  };
+
+  const handleAddTag = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!newTagInput.trim()) return;
+
+    const item = history.find((h) => h.id === id);
+    if (!item) return;
+
+    const currentTags = item.tags || [];
+    const trimmedTag = newTagInput.trim().toLowerCase();
+    
+    if (!currentTags.includes(trimmedTag)) {
+      const updatedTags = [...currentTags, trimmedTag];
+      updateComparisonTags(id, updatedTags);
+      loadHistory();
+      setNewTagInput("");
+      toast.success("Tag adicionada");
+    } else {
+      toast.info("Tag já existe");
+    }
+  };
+
+  const handleRemoveTag = (id: string, tagToRemove: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const item = history.find((h) => h.id === id);
+    if (!item) return;
+
+    const updatedTags = (item.tags || []).filter((tag) => tag !== tagToRemove);
+    updateComparisonTags(id, updatedTags);
+    loadHistory();
+    toast.success("Tag removida");
+  };
+
+  const handleCancelEditingTags = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingTagsId(null);
+    setNewTagInput("");
+  };
+
+  const handleTagFilterClick = (tag: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setTagFilter(tag);
   };
 
   return (
@@ -220,6 +291,24 @@ export const ComparisonHistoryDialog = ({ onLoadComparison }: ComparisonHistoryD
                   <SelectItem value="growth">Crescimento</SelectItem>
                 </SelectContent>
               </Select>
+
+              {/* Tag Filter */}
+              {allTags.length > 0 && (
+                <Select value={tagFilter} onValueChange={setTagFilter}>
+                  <SelectTrigger className="w-[160px] h-9">
+                    <Tag className="w-3.5 h-3.5 mr-2" />
+                    <SelectValue placeholder="Tag" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background z-50">
+                    <SelectItem value="all">Todas as tags</SelectItem>
+                    {allTags.map((tag) => (
+                      <SelectItem key={tag} value={tag}>
+                        {tag}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
 
               {/* Period Filter */}
               <Select value={periodFilter} onValueChange={setPeriodFilter}>
@@ -361,6 +450,84 @@ export const ComparisonHistoryDialog = ({ onLoadComparison }: ComparisonHistoryD
                             </Badge>
                           )}
 
+                          {/* Tags section */}
+                          {editingTagsId === item.id ? (
+                            <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                                <Tag className="w-3.5 h-3.5" />
+                                Tags:
+                              </div>
+                              <div className="flex flex-wrap gap-1.5 mb-2">
+                                {(item.tags || []).map((tag) => (
+                                  <Badge
+                                    key={tag}
+                                    variant="secondary"
+                                    className="text-xs gap-1 cursor-pointer hover:bg-destructive/10"
+                                  >
+                                    {tag}
+                                    <X
+                                      className="w-3 h-3"
+                                      onClick={(e) => handleRemoveTag(item.id, tag, e)}
+                                    />
+                                  </Badge>
+                                ))}
+                              </div>
+                              <div className="flex gap-2">
+                                <Input
+                                  value={newTagInput}
+                                  onChange={(e) => setNewTagInput(e.target.value)}
+                                  placeholder="Nova tag..."
+                                  className="h-8 text-xs"
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                      handleAddTag(item.id, e as any);
+                                    }
+                                  }}
+                                  autoFocus
+                                />
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  onClick={(e) => handleAddTag(item.id, e)}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <Plus className="w-3.5 h-3.5" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={handleCancelEditingTags}
+                                  className="h-8 text-xs"
+                                >
+                                  Fechar
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              {item.tags && item.tags.length > 0 && (
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                                    <Tag className="w-3.5 h-3.5" />
+                                    Tags:
+                                  </div>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {item.tags.map((tag) => (
+                                      <Badge
+                                        key={tag}
+                                        variant="secondary"
+                                        className="text-xs cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                                        onClick={(e) => handleTagFilterClick(tag, e)}
+                                      >
+                                        {tag}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          )}
+
                           {/* Notes section */}
                           {editingNotesId === item.id ? (
                             <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
@@ -414,6 +581,15 @@ export const ComparisonHistoryDialog = ({ onLoadComparison }: ComparisonHistoryD
 
                         {/* Action buttons */}
                         <div className="flex flex-col gap-1 flex-shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={(e) => handleStartEditingTags(item, e)}
+                            title={item.tags && item.tags.length > 0 ? "Editar tags" : "Adicionar tags"}
+                          >
+                            <Tag className="w-3.5 h-3.5" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="icon"
