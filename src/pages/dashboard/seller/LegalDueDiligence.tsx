@@ -91,7 +91,7 @@ export default function LegalDueDiligence() {
 
   return (
     <DashboardLayout>
-      <div className="p-8 max-w-6xl mx-auto">
+      <div className="p-4 md:p-8 max-w-6xl mx-auto">
         {/* Header */}
         <Link
           to="/dashboard/seller/companies"
@@ -129,8 +129,8 @@ export default function LegalDueDiligence() {
               <CardHeader>
                 <CardTitle>Checklist de Documentos</CardTitle>
               </CardHeader>
-              <CardContent>
-                <Table>
+              <CardContent className="overflow-x-auto">
+                <Table className="min-w-[600px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Documento</TableHead>

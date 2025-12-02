@@ -45,7 +45,7 @@ export default function LegalDashboard() {
 
   return (
     <DashboardLayout>
-      <div className="p-8 max-w-7xl mx-auto">
+      <div className="p-4 md:p-8 max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-heading font-bold mb-2">Revisão Legal</h1>
@@ -110,8 +110,8 @@ export default function LegalDashboard() {
           <CardHeader>
             <CardTitle>Empresas Cadastradas</CardTitle>
           </CardHeader>
-          <CardContent>
-            <Table>
+          <CardContent className="overflow-x-auto">
+            <Table className="min-w-[600px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Empresa</TableHead>

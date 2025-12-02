@@ -8,7 +8,7 @@ export default function PoliticaPrivacidade() {
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       
-      <main className="flex-1 container mx-auto px-4 lg:px-8 py-12">
+      <main className="flex-1 container mx-auto px-4 lg:px-8 pt-28 pb-12">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-8">
           <Link to="/" className="hover:text-foreground transition-colors">Home</Link>

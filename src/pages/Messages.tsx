@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Search } from "lucide-react";
+import { Send, Search, ArrowLeft } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const mockConversations = [
   {
@@ -59,6 +60,8 @@ const mockMessages = [
 export default function Messages() {
   const [selectedChat, setSelectedChat] = useState(mockConversations[0]);
   const [messageText, setMessageText] = useState("");
+  const [showChat, setShowChat] = useState(false);
+  const isMobile = useIsMobile();
 
   const getInitials = (name: string) => {
     return name
@@ -76,6 +79,17 @@ export default function Messages() {
     }
   };
 
+  const handleSelectChat = (conversation: typeof mockConversations[0]) => {
+    setSelectedChat(conversation);
+    if (isMobile) {
+      setShowChat(true);
+    }
+  };
+
+  const handleBackToList = () => {
+    setShowChat(false);
+  };
+
   return (
     <DashboardLayout>
       <div className="h-screen flex flex-col">
@@ -86,7 +100,7 @@ export default function Messages() {
 
         <div className="flex-1 flex overflow-hidden">
           {/* Conversations List */}
-          <Card className="w-80 border-r rounded-none">
+          <Card className={`w-full md:w-80 border-r rounded-none ${isMobile && showChat ? 'hidden' : 'block'}`}>
             <div className="p-4 border-b">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -98,7 +112,7 @@ export default function Messages() {
               {mockConversations.map((conversation) => (
                 <div
                   key={conversation.id}
-                  onClick={() => setSelectedChat(conversation)}
+                  onClick={() => handleSelectChat(conversation)}
                   className={`p-4 border-b cursor-pointer transition-colors ${
                     selectedChat.id === conversation.id
                       ? "bg-accent"
@@ -131,10 +145,15 @@ export default function Messages() {
           </Card>
 
           {/* Chat Area */}
-          <div className="flex-1 flex flex-col">
+          <div className={`flex-1 flex flex-col ${isMobile && !showChat ? 'hidden' : 'flex'}`}>
             {/* Chat Header */}
             <div className="border-b p-4 bg-muted/30">
               <div className="flex items-center gap-3">
+                {isMobile && (
+                  <Button variant="ghost" size="sm" onClick={handleBackToList}>
+                    <ArrowLeft className="w-4 h-4" />
+                  </Button>
+                )}
                 <Avatar className="h-10 w-10 border-2 border-border">
                   <AvatarFallback className="bg-primary text-primary-foreground">
                     {getInitials(selectedChat.name)}
