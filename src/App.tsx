@@ -30,6 +30,7 @@ import TermosServico from "./pages/legal/TermosServico";
 import PoliticaPrivacidade from "./pages/legal/PoliticaPrivacidade";
 import AvisoRisco from "./pages/legal/AvisoRisco";
 import FAQ from "./pages/legal/FAQ";
+import Contato from "./pages/Contato";
 import LegalDueDiligence from "./pages/dashboard/seller/LegalDueDiligence";
 import LegalReview from "./pages/dashboard/admin/LegalReview";
 import LegalDashboard from "./pages/dashboard/admin/LegalDashboard";
@@ -80,6 +81,7 @@ const App = () => (
             <Route path="/legal/faq" element={<FAQ />} />
             
             {/* Shared Routes */}
+            <Route path="/contato" element={<Contato />} />
             <Route path="/messages" element={<Messages />} />
             <Route path="/profile" element={<Profile />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
