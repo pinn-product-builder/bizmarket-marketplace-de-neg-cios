@@ -30,6 +30,7 @@ import {
   Filter,
 } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 const mockPendingCompanies = [
@@ -72,6 +73,7 @@ const mockPendingCompanies = [
 ];
 
 export default function PendingCompanies() {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [sectorFilter, setSectorFilter] = useState("all");
@@ -270,7 +272,11 @@ export default function PendingCompanies() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => navigate(`/dashboard/admin/pending/${company.id}`)}
+                          >
                             <Eye className="w-4 h-4" />
                           </Button>
                           <Button
