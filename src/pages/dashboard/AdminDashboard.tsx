@@ -109,20 +109,27 @@ export default function AdminDashboard() {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6">
-            {/* Pending Approvals */}
+            {/* Pending Approvals Preview */}
             <div className="lg:col-span-2">
               <Card className="border-2">
                 <CardHeader>
-                  <CardTitle className="text-2xl font-heading flex items-center gap-2">
-                    <Clock className="w-6 h-6 text-warning" />
-                    Empresas Pendentes de Aprovação
-                  </CardTitle>
-                  <CardDescription>
-                    Analise e aprove empresas cadastradas por vendedores
-                  </CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-2xl font-heading flex items-center gap-2">
+                        <Clock className="w-6 h-6 text-warning" />
+                        Empresas Pendentes de Aprovação
+                      </CardTitle>
+                      <CardDescription>
+                        Últimas empresas aguardando análise
+                      </CardDescription>
+                    </div>
+                    <Button variant="outline" asChild>
+                      <a href="/dashboard/admin/pending">Ver todas</a>
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {pendingCompanies.map((company) => (
+                  {pendingCompanies.slice(0, 2).map((company) => (
                     <Card
                       key={company.id}
                       className="border-2 border-warning/30 hover:shadow-md transition-shadow"
