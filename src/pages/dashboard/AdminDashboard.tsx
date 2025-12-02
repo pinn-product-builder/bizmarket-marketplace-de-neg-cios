@@ -1,4 +1,4 @@
-import { DashboardHeader } from "@/components/DashboardHeader";
+import { DashboardLayout } from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,11 +36,9 @@ export default function AdminDashboard() {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardHeader />
-
-      <main className="pt-24 pb-12">
-        <div className="container mx-auto px-4 lg:px-8">
+    <DashboardLayout>
+      <div className="p-8">
+        <div className="max-w-7xl mx-auto">
           {/* Welcome */}
           <div className="mb-8">
             <h1 className="text-3xl lg:text-4xl font-heading font-bold text-primary mb-2">
@@ -271,7 +269,7 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
