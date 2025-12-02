@@ -49,9 +49,14 @@ export const getCompanyHistoricalData = (companyId: string): HistoricalData[] =>
   return historicalData[companyId] || historicalData["1"];
 };
 
-// Get combined data for multiple companies
-export const getCombinedHistoricalData = (companyIds: string[]) => {
-  const periods = ["2021", "2022", "2023", "2024"];
+// Get combined data for multiple companies with year filter
+export const getCombinedHistoricalData = (companyIds: string[], years: number = 4) => {
+  const allPeriods = ["2021", "2022", "2023", "2024"];
+  const currentYear = 2024;
+  const startYear = currentYear - years + 1;
+  
+  // Filter periods based on selected years
+  const periods = allPeriods.filter(p => parseInt(p) >= startYear);
   
   return periods.map((period) => {
     const dataPoint: any = { period };

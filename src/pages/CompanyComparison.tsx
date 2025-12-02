@@ -132,10 +132,11 @@ export default function CompanyComparison() {
   const { companies, removeCompany, clearAll } = useComparison();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [yearsFilter, setYearsFilter] = useState<1 | 2 | 3>(3);
 
-  // Prepare chart data
+  // Prepare chart data with year filter
   const historicalData = companies.length > 0 
-    ? getCombinedHistoricalData(companies.map((c) => c.id))
+    ? getCombinedHistoricalData(companies.map((c) => c.id), yearsFilter)
     : [];
 
   // Prepare data keys for charts
@@ -217,10 +218,28 @@ export default function CompanyComparison() {
             {/* Charts Section */}
             <Card className="border-2">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-primary" />
-                  Análise Histórica (2021-2024)
-                </CardTitle>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5 text-primary" />
+                    Análise Histórica
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Período:</span>
+                    <div className="flex gap-1">
+                      {[1, 2, 3].map((years) => (
+                        <Button
+                          key={years}
+                          variant={yearsFilter === years ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setYearsFilter(years as 1 | 2 | 3)}
+                          className="transition-all duration-300"
+                        >
+                          {years} {years === 1 ? "ano" : "anos"}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="revenue" className="w-full">
