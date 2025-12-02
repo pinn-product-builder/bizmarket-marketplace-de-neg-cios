@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import {
   Table,
   TableBody,
@@ -30,10 +31,12 @@ import {
   Pause,
   Play,
   Trash2,
+  Scale,
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { getDDChecklistByCompany } from "@/lib/mock-legal-data";
 
 const mockCompanies = [
   {
@@ -278,6 +281,12 @@ export default function MyCompanies() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <Link to={`/dashboard/seller/companies/${company.id}/legal`}>
+                                <Scale className="w-4 h-4 mr-2" />
+                                Due Diligence
+                              </Link>
+                            </DropdownMenuItem>
                             <DropdownMenuItem>
                               <Edit className="w-4 h-4 mr-2" />
                               Editar

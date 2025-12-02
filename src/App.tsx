@@ -24,6 +24,10 @@ import AdminCompanyDetails from "./pages/dashboard/admin/CompanyDetails";
 import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import NDAPage from "./pages/legal/NDAPage";
+import LegalDueDiligence from "./pages/dashboard/seller/LegalDueDiligence";
+import LegalReview from "./pages/dashboard/admin/LegalReview";
+import LegalDashboard from "./pages/dashboard/admin/LegalDashboard";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +50,7 @@ const App = () => (
             <Route path="/dashboard/seller" element={<SellerDashboard />} />
             <Route path="/dashboard/seller/companies" element={<MyCompanies />} />
             <Route path="/dashboard/seller/companies/new" element={<CompanyWizard />} />
+            <Route path="/dashboard/seller/companies/:id/legal" element={<LegalDueDiligence />} />
             <Route path="/dashboard/seller/companies/:id/interests" element={<CompanyInterests />} />
             
             {/* Buyer Routes */}
@@ -56,8 +61,13 @@ const App = () => (
             <Route path="/dashboard/admin" element={<AdminDashboard />} />
             <Route path="/dashboard/admin/pending" element={<PendingCompanies />} />
             <Route path="/dashboard/admin/pending/:id" element={<AdminCompanyDetails />} />
+            <Route path="/dashboard/admin/legal" element={<LegalDashboard />} />
+            <Route path="/dashboard/admin/companies/:id/legal" element={<LegalReview />} />
             <Route path="/dashboard/admin/users" element={<Users />} />
             <Route path="/dashboard/admin/reports" element={<Reports />} />
+            
+            {/* Legal Routes */}
+            <Route path="/legal/nda/:ndaId" element={<NDAPage />} />
             
             {/* Shared Routes */}
             <Route path="/messages" element={<Messages />} />
