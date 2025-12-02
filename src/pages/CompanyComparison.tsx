@@ -15,6 +15,7 @@ import { ComparisonBarChart } from "@/components/charts/ComparisonBarChart";
 import { ComparisonRadarChart } from "@/components/charts/ComparisonRadarChart";
 import { ComparisonInsights } from "@/components/charts/ComparisonInsights";
 import { getCombinedHistoricalData, CHART_COLORS } from "@/lib/mock-comparison-data";
+import { getAverageBenchmark } from "@/lib/sector-benchmarks";
 import {
   ArrowLeft,
   X,
@@ -32,6 +33,7 @@ import {
   BarChart3,
   LineChart as LineChartIcon,
   Radar as RadarIcon,
+  Target,
 } from "lucide-react";
 
 // Mock data para informações adicionais (normalmente viria de API)
@@ -164,14 +166,18 @@ export default function CompanyComparison() {
   const getRadarData = () => {
     if (companies.length === 0) return [];
 
+    // Get benchmark based on company sectors
+    const sectors = companies.map((c) => c.sector);
+    const benchmark = getAverageBenchmark(sectors);
+
     const metrics = [
-      { metric: "Faturamento", max: 15 },
-      { metric: "Margem de Lucro", max: 30 },
-      { metric: "Crescimento", max: 40 },
-      { metric: "Funcionários", max: 120 },
-      { metric: "Maturidade", max: 15 },
-      { metric: "Conformidade Jurídica", max: 100 },
-      { metric: "Baixo Risco", max: 100 },
+      { metric: "Faturamento", max: 15, benchmarkKey: "revenue" },
+      { metric: "Margem de Lucro", max: 30, benchmarkKey: "profitMargin" },
+      { metric: "Crescimento", max: 40, benchmarkKey: "growth" },
+      { metric: "Funcionários", max: 120, benchmarkKey: "employees" },
+      { metric: "Maturidade", max: 15, benchmarkKey: "maturity" },
+      { metric: "Conformidade Jurídica", max: 100, benchmarkKey: "legalCompliance" },
+      { metric: "Baixo Risco", max: 100, benchmarkKey: "lowRisk" },
     ];
 
     return metrics.map((m) => {
@@ -211,17 +217,27 @@ export default function CompanyComparison() {
         
         dataPoint[`company${index}`] = Math.min(100, value);
       });
+
+      // Add benchmark value
+      dataPoint["benchmark"] = benchmark[m.benchmarkKey as keyof typeof benchmark];
       
       return dataPoint;
     });
   };
 
   const radarData = getRadarData();
-  const radarDataKeys = companies.map((company, index) => ({
-    key: `company${index}`,
-    name: company.companyName,
-    color: CHART_COLORS[index],
-  }));
+  const radarDataKeys = [
+    ...companies.map((company, index) => ({
+      key: `company${index}`,
+      name: company.companyName,
+      color: CHART_COLORS[index],
+    })),
+    {
+      key: "benchmark",
+      name: "Média do Setor",
+      color: "hsl(var(--muted-foreground))",
+    },
+  ];
 
   const content = (
     <div className={isAuthenticated ? "p-4 md:p-8" : ""}>
@@ -292,6 +308,18 @@ export default function CompanyComparison() {
                 </p>
               </CardHeader>
               <CardContent>
+                <div className="mb-4 p-3 rounded-lg bg-muted/50 border border-border">
+                  <div className="flex items-start gap-2">
+                    <Target className="w-4 h-4 text-muted-foreground mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Benchmark do Setor</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        A linha cinza representa a média do mercado para os setores selecionados.
+                        Compare o desempenho de cada empresa com esse referencial.
+                      </p>
+                    </div>
+                  </div>
+                </div>
                 <ComparisonRadarChart
                   data={radarData}
                   dataKeys={radarDataKeys}
