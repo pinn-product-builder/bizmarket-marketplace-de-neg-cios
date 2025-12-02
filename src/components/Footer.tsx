@@ -60,6 +60,11 @@ export const Footer = () => {
                   Central de Ajuda
                 </Link>
               </li>
+              <li>
+                <Link to="/contato" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">
+                  Contato
+                </Link>
+              </li>
             </ul>
           </div>
 

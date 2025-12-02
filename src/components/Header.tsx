@@ -49,6 +49,9 @@ export const Header = () => {
             <Link to="#about" className="text-foreground hover:text-secondary transition-colors font-medium">
               Sobre
             </Link>
+            <Link to="/contato" className="text-foreground hover:text-secondary transition-colors font-medium">
+              Contato
+            </Link>
           </div>
 
           {/* CTA Buttons / User Menu */}
@@ -127,6 +130,13 @@ export const Header = () => {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Sobre
+              </Link>
+              <Link
+                to="/contato"
+                className="text-foreground hover:text-secondary transition-colors font-medium py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Contato
               </Link>
               <div className="flex flex-col gap-2 pt-4 border-t border-border">
                 {isAuthenticated ? (
