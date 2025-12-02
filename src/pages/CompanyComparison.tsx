@@ -12,6 +12,7 @@ import { useComparison } from "@/contexts/ComparisonContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { ComparisonLineChart } from "@/components/charts/ComparisonLineChart";
 import { ComparisonBarChart } from "@/components/charts/ComparisonBarChart";
+import { ComparisonRadarChart } from "@/components/charts/ComparisonRadarChart";
 import { ComparisonInsights } from "@/components/charts/ComparisonInsights";
 import { getCombinedHistoricalData, CHART_COLORS } from "@/lib/mock-comparison-data";
 import {
@@ -30,6 +31,7 @@ import {
   CalendarDays,
   BarChart3,
   LineChart as LineChartIcon,
+  Radar as RadarIcon,
 } from "lucide-react";
 
 // Mock data para informações adicionais (normalmente viria de API)
@@ -158,6 +160,69 @@ export default function CompanyComparison() {
     color: CHART_COLORS[index],
   }));
 
+  // Prepare radar chart data - normalize all metrics to 0-100 scale
+  const getRadarData = () => {
+    if (companies.length === 0) return [];
+
+    const metrics = [
+      { metric: "Faturamento", max: 15 },
+      { metric: "Margem de Lucro", max: 30 },
+      { metric: "Crescimento", max: 40 },
+      { metric: "Funcionários", max: 120 },
+      { metric: "Maturidade", max: 15 },
+      { metric: "Conformidade Jurídica", max: 100 },
+      { metric: "Baixo Risco", max: 100 },
+    ];
+
+    return metrics.map((m) => {
+      const dataPoint: any = { metric: m.metric };
+      
+      companies.forEach((company, index) => {
+        const details = getMockCompanyDetails(company.id);
+        const currentYear = 2024;
+        
+        let value = 0;
+        switch (m.metric) {
+          case "Faturamento":
+            value = (parseFloat(details.revenue.replace(/[^\d.]/g, "")) / m.max) * 100;
+            break;
+          case "Margem de Lucro":
+            value = (parseFloat(details.profitMargin) / m.max) * 100;
+            break;
+          case "Crescimento":
+            value = (parseFloat(details.growthRate) / m.max) * 100;
+            break;
+          case "Funcionários":
+            value = (details.employees / m.max) * 100;
+            break;
+          case "Maturidade":
+            const age = currentYear - details.foundedYear;
+            value = (age / m.max) * 100;
+            break;
+          case "Conformidade Jurídica":
+            value = details.documentsComplete ? 100 : 50;
+            break;
+          case "Baixo Risco":
+            if (details.legalRisk === "Baixo") value = 100;
+            else if (details.legalRisk === "Médio") value = 50;
+            else value = 20;
+            break;
+        }
+        
+        dataPoint[`company${index}`] = Math.min(100, value);
+      });
+      
+      return dataPoint;
+    });
+  };
+
+  const radarData = getRadarData();
+  const radarDataKeys = companies.map((company, index) => ({
+    key: `company${index}`,
+    name: company.companyName,
+    color: CHART_COLORS[index],
+  }));
+
   const content = (
     <div className={isAuthenticated ? "p-4 md:p-8" : ""}>
       <div className={isAuthenticated ? "max-w-7xl mx-auto" : "container mx-auto px-4 lg:px-8"}>
@@ -214,6 +279,59 @@ export default function CompanyComparison() {
           <div className="space-y-8">
             {/* Insights Section */}
             <ComparisonInsights companies={companies} />
+
+            {/* Radar Chart - Multi-dimensional Comparison */}
+            <Card className="border-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <RadarIcon className="w-5 h-5 text-accent" />
+                  Comparação Multidimensional
+                </CardTitle>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Visualização integrada de métricas financeiras, operacionais e jurídicas (escala 0-100)
+                </p>
+              </CardHeader>
+              <CardContent>
+                <ComparisonRadarChart
+                  data={radarData}
+                  dataKeys={radarDataKeys}
+                  height={500}
+                />
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 rounded-lg bg-success/10 border border-success/20">
+                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                      <DollarSign className="w-4 h-4 text-success" />
+                      Métricas Financeiras
+                    </h4>
+                    <ul className="text-xs text-muted-foreground space-y-1">
+                      <li>• Faturamento anual</li>
+                      <li>• Margem de lucro</li>
+                      <li>• Taxa de crescimento</li>
+                    </ul>
+                  </div>
+                  <div className="p-4 rounded-lg bg-secondary/10 border border-secondary/20">
+                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                      <Briefcase className="w-4 h-4 text-secondary" />
+                      Métricas Operacionais
+                    </h4>
+                    <ul className="text-xs text-muted-foreground space-y-1">
+                      <li>• Número de funcionários</li>
+                      <li>• Maturidade (anos de operação)</li>
+                    </ul>
+                  </div>
+                  <div className="p-4 rounded-lg bg-warning/10 border border-warning/20">
+                    <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                      <Scale className="w-4 h-4 text-warning" />
+                      Métricas Jurídicas
+                    </h4>
+                    <ul className="text-xs text-muted-foreground space-y-1">
+                      <li>• Conformidade documental</li>
+                      <li>• Nível de risco jurídico</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Charts Section */}
             <Card className="border-2">
