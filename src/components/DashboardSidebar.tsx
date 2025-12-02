@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNotifications } from "@/contexts/NotificationsContext";
 import {
   Sidebar,
   SidebarContent,
@@ -29,10 +30,12 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 export function DashboardSidebar() {
   const { user, logout } = useAuth();
   const { state } = useSidebar();
+  const { notifications, clearNotifications } = useNotifications();
   const isCollapsed = state === "collapsed";
 
   const getInitials = (name: string) => {
@@ -45,26 +48,26 @@ export function DashboardSidebar() {
   };
 
   const sellerItems = [
-    { title: "Dashboard", url: "/dashboard/seller", icon: LayoutDashboard },
-    { title: "Minhas Empresas", url: "/dashboard/seller", icon: Building2 },
-    { title: "Cadastrar Empresa", url: "/dashboard/seller/companies/new", icon: PlusCircle },
-    { title: "Mensagens", url: "/messages", icon: MessageSquare },
-    { title: "Perfil", url: "/profile", icon: User },
+    { title: "Dashboard", url: "/dashboard/seller", icon: LayoutDashboard, badge: 0 },
+    { title: "Minhas Empresas", url: "/dashboard/seller", icon: Building2, badge: 0 },
+    { title: "Cadastrar Empresa", url: "/dashboard/seller/companies/new", icon: PlusCircle, badge: 0 },
+    { title: "Mensagens", url: "/messages", icon: MessageSquare, badge: notifications.messages, badgeType: "messages" as const },
+    { title: "Perfil", url: "/profile", icon: User, badge: 0 },
   ];
 
   const buyerItems = [
-    { title: "Marketplace", url: "/marketplace", icon: Store },
-    { title: "Meus Interesses", url: "/dashboard/buyer/interests", icon: Heart },
-    { title: "Mensagens", url: "/messages", icon: MessageSquare },
-    { title: "Perfil", url: "/profile", icon: User },
+    { title: "Marketplace", url: "/marketplace", icon: Store, badge: 0 },
+    { title: "Meus Interesses", url: "/dashboard/buyer/interests", icon: Heart, badge: notifications.interests, badgeType: "interests" as const },
+    { title: "Mensagens", url: "/messages", icon: MessageSquare, badge: notifications.messages, badgeType: "messages" as const },
+    { title: "Perfil", url: "/profile", icon: User, badge: 0 },
   ];
 
   const adminItems = [
-    { title: "Dashboard", url: "/dashboard/admin", icon: LayoutDashboard },
-    { title: "Empresas Pendentes", url: "/dashboard/admin", icon: CheckCircle },
-    { title: "Todas Empresas", url: "/marketplace", icon: Building2 },
-    { title: "Usuários", url: "/dashboard/admin/users", icon: Users },
-    { title: "Relatórios", url: "/dashboard/admin/reports", icon: BarChart3 },
+    { title: "Dashboard", url: "/dashboard/admin", icon: LayoutDashboard, badge: 0 },
+    { title: "Empresas Pendentes", url: "/dashboard/admin", icon: CheckCircle, badge: notifications.pendingApprovals, badgeType: "pendingApprovals" as const },
+    { title: "Todas Empresas", url: "/marketplace", icon: Building2, badge: 0 },
+    { title: "Usuários", url: "/dashboard/admin/users", icon: Users, badge: 0 },
+    { title: "Relatórios", url: "/dashboard/admin/reports", icon: BarChart3, badge: 0 },
   ];
 
   const items =
@@ -103,11 +106,25 @@ export function DashboardSidebar() {
                     <NavLink
                       to={item.url}
                       end={item.url === "/dashboard/seller" || item.url === "/dashboard/admin" || item.url === "/marketplace"}
-                      className="hover:bg-accent hover:text-accent-foreground"
+                      className="hover:bg-accent hover:text-accent-foreground relative"
                       activeClassName="bg-accent text-accent-foreground font-medium"
+                      onClick={() => {
+                        if (item.badgeType) {
+                          clearNotifications(item.badgeType);
+                        }
+                      }}
                     >
                       <item.icon className="h-4 w-4" />
-                      {!isCollapsed && <span>{item.title}</span>}
+                      {!isCollapsed && (
+                        <span className="flex-1">{item.title}</span>
+                      )}
+                      {item.badge > 0 && (
+                        <Badge 
+                          className="bg-destructive text-destructive-foreground h-5 min-w-5 px-1.5 text-xs flex items-center justify-center ml-auto"
+                        >
+                          {item.badge > 99 ? "99+" : item.badge}
+                        </Badge>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
