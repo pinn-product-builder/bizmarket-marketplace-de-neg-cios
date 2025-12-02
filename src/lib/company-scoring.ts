@@ -43,6 +43,42 @@ export interface CategoryWeights {
   legal: number;
 }
 
+// Presets de pesos predefinidos
+export const WEIGHT_PRESETS = {
+  balanced: {
+    name: "Balanceado",
+    description: "Equilíbrio entre todas as categorias",
+    icon: "Scale",
+    weights: { financial: 0.40, operational: 0.30, legal: 0.30 },
+  },
+  financialFocus: {
+    name: "Foco Financeiro",
+    description: "Prioriza métricas financeiras e rentabilidade",
+    icon: "DollarSign",
+    weights: { financial: 0.60, operational: 0.20, legal: 0.20 },
+  },
+  operationalFocus: {
+    name: "Foco Operacional",
+    description: "Prioriza escala e maturidade operacional",
+    icon: "Briefcase",
+    weights: { financial: 0.20, operational: 0.60, legal: 0.20 },
+  },
+  legalFocus: {
+    name: "Foco Jurídico",
+    description: "Prioriza conformidade e baixo risco legal",
+    icon: "Scale",
+    weights: { financial: 0.20, operational: 0.20, legal: 0.60 },
+  },
+  growth: {
+    name: "Crescimento",
+    description: "Equilibra crescimento financeiro e operacional",
+    icon: "TrendingUp",
+    weights: { financial: 0.45, operational: 0.35, legal: 0.20 },
+  },
+} as const;
+
+export type WeightPresetKey = keyof typeof WEIGHT_PRESETS;
+
 // Pesos individuais dentro de cada categoria
 const METRIC_WEIGHTS = {
   revenue: 0.35,
