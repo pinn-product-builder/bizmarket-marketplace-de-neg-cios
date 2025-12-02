@@ -1,7 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getCompanyHistoricalData } from "@/lib/mock-comparison-data";
-import { TrendingUp, TrendingDown, ArrowRight, AlertCircle } from "lucide-react";
+import { TrendingUp, TrendingDown, ArrowRight, AlertCircle, Sparkles } from "lucide-react";
+import { AIBadge } from "@/components/ui/ai-badge";
+import { useState, useEffect } from "react";
+import { generateComparisonInsights } from "@/lib/mock-ai-service";
+import { AILoading } from "@/components/ui/ai-loading";
 
 interface Company {
   id: string;
@@ -13,6 +17,12 @@ interface ComparisonInsightsProps {
 }
 
 export const ComparisonInsights = ({ companies }: ComparisonInsightsProps) => {
+  const [aiInsights, setAiInsights] = useState<{
+    revenueAnalysis: string;
+    overallRecommendation: string;
+  } | null>(null);
+  const [loadingAI, setLoadingAI] = useState(false);
+
   // Calculate insights for each company
   const insights = companies.map((company) => {
     const data = getCompanyHistoricalData(company.id);
@@ -41,12 +51,36 @@ export const ComparisonInsights = ({ companies }: ComparisonInsightsProps) => {
     parseFloat(current.marginImprovement) > parseFloat(max.marginImprovement) ? current : max
   );
 
+  // Generate AI insights
+  useEffect(() => {
+    const loadAIInsights = async () => {
+      setLoadingAI(true);
+      try {
+        const analysis = await generateComparisonInsights({
+          companies: insights,
+          bestRevenue,
+          bestMargin,
+        });
+        setAiInsights(analysis);
+      } catch (error) {
+        console.error("AI insights error:", error);
+      } finally {
+        setLoadingAI(false);
+      }
+    };
+    
+    if (companies.length > 0) {
+      loadAIInsights();
+    }
+  }, [companies]);
+
   return (
     <Card className="border-2 bg-muted/30">
       <CardContent className="pt-6">
         <div className="flex items-center gap-2 mb-4">
           <AlertCircle className="w-5 h-5 text-primary" />
           <h3 className="font-semibold text-lg">Insights da Comparação</h3>
+          <AIBadge />
         </div>
 
         <div className="grid md:grid-cols-2 gap-4">
@@ -83,6 +117,24 @@ export const ComparisonInsights = ({ companies }: ComparisonInsightsProps) => {
             </div>
           </div>
         </div>
+
+        {/* AI-Generated Detailed Analysis */}
+        {loadingAI && <AILoading className="mt-4" message="Gerando análise detalhada..." />}
+        
+        {aiInsights && (
+          <div className="mt-4 p-4 bg-gradient-to-br from-primary/5 to-secondary/5 rounded-lg border-2 border-primary/20">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <h4 className="text-sm font-semibold">Análise Detalhada por IA</h4>
+            </div>
+            <div className="space-y-3 text-sm">
+              <p className="text-foreground leading-relaxed">{aiInsights.revenueAnalysis}</p>
+              <p className="text-foreground leading-relaxed font-medium bg-background/50 p-3 rounded border">
+                {aiInsights.overallRecommendation}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Individual Company Insights */}
         <div className="mt-4 space-y-2">

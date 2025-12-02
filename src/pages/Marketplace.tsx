@@ -15,11 +15,13 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, SlidersHorizontal, X, FilterX, GitCompare } from "lucide-react";
-import { useState, useMemo } from "react";
+import { Search, SlidersHorizontal, X, FilterX, GitCompare, Sparkles } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useComparison } from "@/contexts/ComparisonContext";
 import { Link } from "react-router-dom";
+import { AIBadge } from "@/components/ui/ai-badge";
+import { getSmartRecommendations, parseSemanticQuery } from "@/lib/mock-ai-service";
 
 const mockCompanies = [
   {
@@ -86,8 +88,43 @@ export default function Marketplace() {
   const [employeeRange, setEmployeeRange] = useState("");
   const [sortBy, setSortBy] = useState("recent");
   const [showFilters, setShowFilters] = useState(true);
-  const { isAuthenticated } = useAuth();
+  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+  const { isAuthenticated, user } = useAuth();
   const { companies: comparisonCompanies } = useComparison();
+
+  // Load AI recommendations on mount for authenticated buyers
+  useEffect(() => {
+    if (isAuthenticated && user?.userType === "buyer") {
+      loadRecommendations();
+    }
+  }, [isAuthenticated, user]);
+
+  const loadRecommendations = async () => {
+    setLoadingRecommendations(true);
+    try {
+      const recs = await getSmartRecommendations(mockCompanies, {
+        viewedCompanies: mockCompanies.slice(0, 2), // Mock viewing history
+      });
+      setRecommendations(recs);
+    } catch (error) {
+      console.error("Recommendations error:", error);
+    } finally {
+      setLoadingRecommendations(false);
+    }
+  };
+
+  // Handle semantic search
+  const handleSemanticSearch = async (query: string) => {
+    setSearchQuery(query);
+    if (query.length > 3) {
+      const filters = await parseSemanticQuery(query);
+      if (filters.sectors) setSector(filters.sectors[0]);
+      if (filters.states) setState(filters.states[0]);
+      if (filters.revenueRange) setRevenueRange(filters.revenueRange);
+      if (filters.sortBy) setSortBy(filters.sortBy);
+    }
+  };
 
   // Função para extrair valor numérico do revenue
   const getRevenueValue = (revenue: string): number => {
@@ -224,6 +261,33 @@ export default function Marketplace() {
           </div>
         </div>
 
+        {/* AI Recommendations Section */}
+        {isAuthenticated && user?.userType === "buyer" && recommendations.length > 0 && (
+          <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-secondary/5 mb-8">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Sparkles className="w-5 h-5 text-primary" />
+                <h3 className="font-heading font-semibold text-lg">Recomendados para Você</h3>
+                <AIBadge />
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Empresas selecionadas com base no seu perfil e histórico de visualizações
+              </p>
+              <div className="grid md:grid-cols-3 gap-4">
+                {recommendations.map((company) => (
+                  <div key={company.id} className="relative">
+                    <CompanyCard {...company} />
+                    <Badge className="absolute top-2 right-2 gap-1 bg-primary/90">
+                      <Sparkles className="w-3 h-3" />
+                      Recomendado
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Filters */}
         <Card className="border-2 mb-8 shadow-lg">
           <CardContent className="pt-6">
@@ -262,17 +326,23 @@ export default function Marketplace() {
 
             <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ${!showFilters ? 'hidden sm:grid' : ''}`}>
               <div className="lg:col-span-3">
-                <Label htmlFor="search">Buscar por nome ou palavra-chave</Label>
+                <Label htmlFor="search">
+                  Buscar por nome ou descreva o que procura 
+                  <AIBadge className="ml-2" />
+                </Label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     id="search"
-                    placeholder="Ex: Tecnologia, Logística..."
+                    placeholder="Ex: 'empresa de tecnologia lucrativa em SP' ou apenas 'Tecnologia'"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => handleSemanticSearch(e.target.value)}
                     className="pl-10"
                   />
                 </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  💡 Dica: Use linguagem natural como "startup em crescimento" ou "baixo investimento"
+                </p>
               </div>
 
               <div>

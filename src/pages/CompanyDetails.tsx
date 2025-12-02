@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { DashboardLayout } from "@/layouts/DashboardLayout";
@@ -29,6 +29,7 @@ import {
   ArrowLeft,
   Shield,
   Lock,
+  Sparkles,
 } from "lucide-react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -38,6 +39,9 @@ import {
   createMockNDA,
   getDDChecklistByCompany,
 } from "@/lib/mock-legal-data";
+import { AIBadge } from "@/components/ui/ai-badge";
+import { AILoading } from "@/components/ui/ai-loading";
+import { generateExecutiveSummary, suggestInterestMessage } from "@/lib/mock-ai-service";
 
 export default function CompanyDetails() {
   const { id } = useParams();
@@ -46,6 +50,9 @@ export default function CompanyDetails() {
   const { toast } = useToast();
   const [isInterestDialogOpen, setIsInterestDialogOpen] = useState(false);
   const [interestMessage, setInterestMessage] = useState("");
+  const [executiveSummary, setExecutiveSummary] = useState<string | null>(null);
+  const [loadingSummary, setLoadingSummary] = useState(false);
+  const [loadingSuggestion, setLoadingSuggestion] = useState(false);
 
   // Legal module data
   const companyId = id || "1";
@@ -88,6 +95,23 @@ export default function CompanyDetails() {
       return;
     }
     setIsInterestDialogOpen(true);
+    // Auto-suggest message when dialog opens
+    handleSuggestMessage();
+  };
+
+  const handleSuggestMessage = async () => {
+    setLoadingSuggestion(true);
+    try {
+      const suggestion = await suggestInterestMessage({
+        companyName: company.companyName,
+        sector: company.sector,
+      });
+      setInterestMessage(suggestion);
+    } catch (error) {
+      console.error("Message suggestion error:", error);
+    } finally {
+      setLoadingSuggestion(false);
+    }
   };
 
   const handleSendInterest = () => {
@@ -133,6 +157,23 @@ export default function CompanyDetails() {
       description: "Visualizando documentos disponíveis...",
     });
   };
+
+  // Generate executive summary on mount
+  useEffect(() => {
+    const loadSummary = async () => {
+      setLoadingSummary(true);
+      try {
+        const summary = await generateExecutiveSummary(company);
+        setExecutiveSummary(summary);
+      } catch (error) {
+        console.error("Summary generation error:", error);
+      } finally {
+        setLoadingSummary(false);
+      }
+    };
+    
+    loadSummary();
+  }, []);
 
   const content = (
     <div className={isAuthenticated ? "p-8" : ""}>
@@ -220,6 +261,30 @@ export default function CompanyDetails() {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            {/* AI Executive Summary */}
+            {loadingSummary && (
+              <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-secondary/5">
+                <CardContent className="pt-6">
+                  <AILoading message="Gerando resumo executivo..." />
+                </CardContent>
+              </Card>
+            )}
+            
+            {executiveSummary && (
+              <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-secondary/5">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-primary" />
+                    Resumo Executivo
+                    <AIBadge />
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-foreground leading-relaxed">{executiveSummary}</p>
+                </CardContent>
+              </Card>
+            )}
+
             <Card className="border-2">
               <CardHeader>
                 <CardTitle className="text-2xl font-heading">Sobre a Empresa</CardTitle>
@@ -391,15 +456,22 @@ export default function CompanyDetails() {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
+              {loadingSuggestion && <AILoading message="Gerando mensagem sugerida..." />}
               <div className="space-y-2">
-                <Label htmlFor="message">Mensagem (opcional)</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="message">Mensagem</Label>
+                  <AIBadge />
+                </div>
                 <Textarea
                   id="message"
                   placeholder="Conte um pouco sobre seu interesse e objetivos..."
                   value={interestMessage}
                   onChange={(e) => setInterestMessage(e.target.value)}
-                  rows={5}
+                  rows={8}
                 />
+                <p className="text-xs text-muted-foreground">
+                  💡 Uma mensagem sugerida pela IA foi gerada automaticamente. Sinta-se à vontade para editá-la.
+                </p>
               </div>
             </div>
             <DialogFooter>
@@ -432,15 +504,22 @@ export default function CompanyDetails() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            {loadingSuggestion && <AILoading message="Gerando mensagem sugerida..." />}
             <div className="space-y-2">
-              <Label htmlFor="message">Mensagem (opcional)</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="message">Mensagem</Label>
+                <AIBadge />
+              </div>
               <Textarea
                 id="message"
                 placeholder="Conte um pouco sobre seu interesse e objetivos..."
                 value={interestMessage}
                 onChange={(e) => setInterestMessage(e.target.value)}
-                rows={5}
+                rows={8}
               />
+              <p className="text-xs text-muted-foreground">
+                💡 Uma mensagem sugerida pela IA foi gerada automaticamente. Sinta-se à vontade para editá-la.
+              </p>
             </div>
           </div>
           <DialogFooter>
