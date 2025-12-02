@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
+import { RiskLevelBadge } from "@/components/legal/RiskLevelBadge";
 import {
   Dialog,
   DialogContent,
@@ -25,10 +27,17 @@ import {
   FileText,
   MessageSquare,
   ArrowLeft,
+  Shield,
+  Lock,
 } from "lucide-react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import {
+  getNDAByCompanyAndBuyer,
+  createMockNDA,
+  getDDChecklistByCompany,
+} from "@/lib/mock-legal-data";
 
 export default function CompanyDetails() {
   const { id } = useParams();
@@ -37,6 +46,12 @@ export default function CompanyDetails() {
   const { toast } = useToast();
   const [isInterestDialogOpen, setIsInterestDialogOpen] = useState(false);
   const [interestMessage, setInterestMessage] = useState("");
+
+  // Legal module data
+  const companyId = id || "1";
+  const existingNDA = getNDAByCompanyAndBuyer(companyId, user?.id || "");
+  const ddChecklist = getDDChecklistByCompany(companyId);
+  const hasSignedNDA = existingNDA?.status === "signed";
 
   // Mock data - will be replaced with real data from Supabase
   const company = {
@@ -82,6 +97,41 @@ export default function CompanyDetails() {
     });
     setIsInterestDialogOpen(false);
     setInterestMessage("");
+  };
+
+  const handleRequestNDA = () => {
+    if (!isAuthenticated) {
+      navigate("/auth/login");
+      return;
+    }
+    if (user?.userType !== "buyer") {
+      toast({
+        title: "Acesso restrito",
+        description: "Apenas compradores podem solicitar acesso aos documentos.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create NDA if doesn't exist
+    let nda = existingNDA;
+    if (!nda) {
+      nda = createMockNDA(companyId, user.id, "seller-1");
+      toast({
+        title: "NDA criado",
+        description: "Você será redirecionado para assinar o acordo.",
+      });
+    }
+
+    // Navigate to NDA page
+    navigate(`/legal/nda/${nda.id}`);
+  };
+
+  const handleViewLegalDocs = () => {
+    toast({
+      title: "Documentos jurídicos",
+      description: "Visualizando documentos disponíveis...",
+    });
   };
 
   const content = (
@@ -208,6 +258,73 @@ export default function CompanyDetails() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Legal Status Card */}
+            {isAuthenticated && user?.userType === "buyer" && ddChecklist && (
+              <Card className="border-2 border-secondary/50 bg-secondary/5">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-secondary">
+                    <Shield className="w-5 h-5" />
+                    Status Jurídico
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">Due Diligence</p>
+                    <div className="flex items-center gap-3 mb-1">
+                      <Progress
+                        value={ddChecklist.completionPercentage}
+                        className="flex-1 h-2"
+                      />
+                      <span className="text-sm font-bold">
+                        {ddChecklist.completionPercentage}%
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Documentação completa</p>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">Nível de Risco</p>
+                    <RiskLevelBadge level={ddChecklist.riskLevel} />
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-2">
+                    {!hasSignedNDA ? (
+                      <>
+                        <div className="flex items-start gap-2 text-xs text-muted-foreground mb-2">
+                          <Lock className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                          <p>
+                            Para acessar os documentos jurídicos completos, é necessário
+                            assinar um NDA.
+                          </p>
+                        </div>
+                        <Button
+                          className="w-full"
+                          variant="secondary"
+                          onClick={handleRequestNDA}
+                        >
+                          <Lock className="w-4 h-4 mr-2" />
+                          Solicitar Acesso (NDA)
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        className="w-full"
+                        variant="secondary"
+                        onClick={handleViewLegalDocs}
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        Ver Documentos Jurídicos
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <Card className="border-2 border-success/50 bg-success/5">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-success">

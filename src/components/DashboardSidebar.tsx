@@ -9,7 +9,8 @@ import {
   Users,
   CheckCircle,
   BarChart3,
-  Menu
+  Menu,
+  Scale
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
@@ -65,6 +66,7 @@ export function DashboardSidebar() {
   const adminItems = [
     { title: "Dashboard", url: "/dashboard/admin", icon: LayoutDashboard, badge: 0 },
     { title: "Empresas Pendentes", url: "/dashboard/admin/pending", icon: CheckCircle, badge: notifications.pendingApprovals, badgeType: "pendingApprovals" as const },
+    { title: "Revisão Legal", url: "/dashboard/admin/legal", icon: Scale, badge: 0 },
     { title: "Todas Empresas", url: "/marketplace", icon: Building2, badge: 0 },
     { title: "Usuários", url: "/dashboard/admin/users", icon: Users, badge: 0 },
     { title: "Relatórios", url: "/dashboard/admin/reports", icon: BarChart3, badge: 0 },
