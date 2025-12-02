@@ -18,7 +18,7 @@ import { ComparisonInsights } from "@/components/charts/ComparisonInsights";
 import { CompanyScoreCard } from "@/components/charts/CompanyScoreCard";
 import { getCombinedHistoricalData, CHART_COLORS } from "@/lib/mock-comparison-data";
 import { getAverageBenchmark } from "@/lib/sector-benchmarks";
-import { calculateCompanyScore, DEFAULT_WEIGHTS, CategoryWeights } from "@/lib/company-scoring";
+import { calculateCompanyScore, DEFAULT_WEIGHTS, CategoryWeights, WEIGHT_PRESETS, WeightPresetKey } from "@/lib/company-scoring";
 import {
   ArrowLeft,
   X,
@@ -145,14 +145,22 @@ export default function CompanyComparison() {
   const [yearsFilter, setYearsFilter] = useState<1 | 2 | 3>(3);
   const [customWeights, setCustomWeights] = useState<CategoryWeights>(DEFAULT_WEIGHTS);
   const [showWeightSettings, setShowWeightSettings] = useState(false);
+  const [selectedPreset, setSelectedPreset] = useState<WeightPresetKey>("balanced");
+
+  // Apply preset weights
+  const applyPreset = (presetKey: WeightPresetKey) => {
+    setSelectedPreset(presetKey);
+    setCustomWeights(WEIGHT_PRESETS[presetKey].weights);
+  };
 
   // Reset weights to default
   const resetWeights = () => {
-    setCustomWeights(DEFAULT_WEIGHTS);
+    applyPreset("balanced");
   };
 
   // Update weight and adjust others to maintain 100% total
   const updateWeight = (category: keyof CategoryWeights, value: number) => {
+    setSelectedPreset("balanced"); // Reset preset when manually adjusting
     const newValue = value / 100; // Convert from 0-100 to 0-1
     const otherCategories = (Object.keys(customWeights) as Array<keyof CategoryWeights>)
       .filter(k => k !== category);
@@ -384,6 +392,32 @@ export default function CompanyComparison() {
                     </p>
                   </CardHeader>
                   <CardContent className="space-y-6">
+                    {/* Presets */}
+                    <div className="space-y-3">
+                      <label className="text-sm font-semibold">Presets Rápidos</label>
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                        {(Object.keys(WEIGHT_PRESETS) as WeightPresetKey[]).map((key) => {
+                          const preset = WEIGHT_PRESETS[key];
+                          return (
+                            <Button
+                              key={key}
+                              variant={selectedPreset === key ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => applyPreset(key)}
+                              className="flex flex-col h-auto py-3 px-2 text-xs transition-all"
+                            >
+                              <span className="font-semibold mb-0.5">{preset.name}</span>
+                              <span className="text-[10px] text-muted-foreground opacity-80 line-clamp-2">
+                                {preset.description}
+                              </span>
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <Separator />
+
                     {/* Financial Weight */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
