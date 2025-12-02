@@ -1,9 +1,20 @@
+import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Building2,
   MapPin,
@@ -14,10 +25,17 @@ import {
   MessageSquare,
   ArrowLeft,
 } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 export default function CompanyDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
+  const { toast } = useToast();
+  const [isInterestDialogOpen, setIsInterestDialogOpen] = useState(false);
+  const [interestMessage, setInterestMessage] = useState("");
 
   // Mock data - will be replaced with real data from Supabase
   const company = {
@@ -38,6 +56,31 @@ export default function CompanyDetails() {
     mainProducts: "Sistemas web, aplicativos móveis, APIs e integrações",
     competitiveDifferentials:
       "Time altamente qualificado, metodologia ágil comprovada, clientes recorrentes com contratos de longo prazo",
+  };
+
+  const handleInterestClick = () => {
+    if (!isAuthenticated) {
+      navigate("/auth/login");
+      return;
+    }
+    if (user?.userType !== "buyer") {
+      toast({
+        title: "Acesso restrito",
+        description: "Apenas compradores podem demonstrar interesse.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsInterestDialogOpen(true);
+  };
+
+  const handleSendInterest = () => {
+    toast({
+      title: "Interesse demonstrado!",
+      description: "O vendedor foi notificado e responderá em breve.",
+    });
+    setIsInterestDialogOpen(false);
+    setInterestMessage("");
   };
 
   return (
@@ -120,7 +163,7 @@ export default function CompanyDetails() {
               </div>
             </div>
 
-            <Button size="lg" className="w-full" variant="default">
+            <Button size="lg" className="w-full" variant="default" onClick={handleInterestClick}>
               <MessageSquare className="w-5 h-5" />
               Demonstrar Interesse
             </Button>
@@ -219,6 +262,38 @@ export default function CompanyDetails() {
       </main>
 
       <Footer />
+
+      {/* Interest Dialog */}
+      <Dialog open={isInterestDialogOpen} onOpenChange={setIsInterestDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Demonstrar Interesse</DialogTitle>
+            <DialogDescription>
+              Envie uma mensagem para o vendedor demonstrando seu interesse nesta empresa.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="message">Mensagem (opcional)</Label>
+              <Textarea
+                id="message"
+                placeholder="Conte um pouco sobre seu interesse e objetivos..."
+                value={interestMessage}
+                onChange={(e) => setInterestMessage(e.target.value)}
+                rows={5}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsInterestDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSendInterest}>
+              Enviar Interesse
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
