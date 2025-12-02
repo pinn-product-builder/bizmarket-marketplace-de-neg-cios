@@ -1,0 +1,463 @@
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { DashboardLayout } from "@/layouts/DashboardLayout";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { useComparison } from "@/contexts/ComparisonContext";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  ArrowLeft,
+  X,
+  Building2,
+  MapPin,
+  Users,
+  TrendingUp,
+  Briefcase,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  Scale,
+  DollarSign,
+  CalendarDays,
+} from "lucide-react";
+
+// Mock data para informações adicionais (normalmente viria de API)
+const getMockCompanyDetails = (id: string) => {
+  const details: Record<string, any> = {
+    "1": {
+      foundedYear: 2018,
+      profitMargin: "25%",
+      growthRate: "15%",
+      debtLevel: "Baixo",
+      legalStatus: "Aprovado",
+      legalRisk: "Baixo",
+      documentsComplete: true,
+      employees: 45,
+      revenue: "R$ 5M/ano",
+    },
+    "2": {
+      foundedYear: 2015,
+      profitMargin: "18%",
+      growthRate: "22%",
+      debtLevel: "Médio",
+      legalStatus: "Em revisão",
+      legalRisk: "Médio",
+      documentsComplete: false,
+      employees: 120,
+      revenue: "R$ 12M/ano",
+    },
+    "3": {
+      foundedYear: 2020,
+      profitMargin: "30%",
+      growthRate: "40%",
+      debtLevel: "Baixo",
+      legalStatus: "Aprovado",
+      legalRisk: "Baixo",
+      documentsComplete: true,
+      employees: 35,
+      revenue: "R$ 3M/ano",
+    },
+    "4": {
+      foundedYear: 2012,
+      profitMargin: "20%",
+      growthRate: "12%",
+      debtLevel: "Médio",
+      legalStatus: "Aprovado",
+      legalRisk: "Médio",
+      documentsComplete: true,
+      employees: 80,
+      revenue: "R$ 8M/ano",
+    },
+    "5": {
+      foundedYear: 2010,
+      profitMargin: "15%",
+      growthRate: "8%",
+      debtLevel: "Alto",
+      legalStatus: "Pendente",
+      legalRisk: "Alto",
+      documentsComplete: false,
+      employees: 95,
+      revenue: "R$ 15M/ano",
+    },
+    "6": {
+      foundedYear: 2019,
+      profitMargin: "28%",
+      growthRate: "35%",
+      debtLevel: "Baixo",
+      legalStatus: "Aprovado",
+      legalRisk: "Baixo",
+      documentsComplete: true,
+      employees: 60,
+      revenue: "R$ 4M/ano",
+    },
+  };
+  return details[id] || details["1"];
+};
+
+const getRiskBadge = (risk: string) => {
+  if (risk === "Baixo")
+    return (
+      <Badge className="bg-success hover:bg-success">
+        <CheckCircle2 className="w-3 h-3 mr-1" />
+        {risk}
+      </Badge>
+    );
+  if (risk === "Médio")
+    return (
+      <Badge className="bg-warning hover:bg-warning">
+        <AlertCircle className="w-3 h-3 mr-1" />
+        {risk}
+      </Badge>
+    );
+  return (
+    <Badge variant="destructive">
+      <XCircle className="w-3 h-3 mr-1" />
+      {risk}
+    </Badge>
+  );
+};
+
+export default function CompanyComparison() {
+  const { companies, removeCompany, clearAll } = useComparison();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  const content = (
+    <div className={isAuthenticated ? "p-4 md:p-8" : ""}>
+      <div className={isAuthenticated ? "max-w-7xl mx-auto" : "container mx-auto px-4 lg:px-8"}>
+        {/* Header */}
+        <div className="mb-8">
+          <Link
+            to="/marketplace"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Voltar para Marketplace
+          </Link>
+          
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl lg:text-4xl font-heading font-bold text-primary mb-2">
+                Comparar Empresas
+              </h1>
+              <p className="text-muted-foreground">
+                Compare métricas financeiras, operacionais e jurídicas lado a lado
+              </p>
+            </div>
+            {companies.length > 0 && (
+              <Button variant="outline" onClick={clearAll} className="w-full sm:w-auto">
+                <X className="w-4 h-4 mr-2" />
+                Limpar Todas
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Empty State */}
+        {companies.length === 0 && (
+          <Card className="border-2">
+            <CardContent className="py-12 text-center">
+              <div className="w-16 h-16 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
+                <Building2 className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-xl font-heading font-semibold mb-2">
+                Nenhuma empresa selecionada
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                Adicione até 3 empresas do marketplace para comparar
+              </p>
+              <Button onClick={() => navigate("/marketplace")}>
+                Ir para Marketplace
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Comparison Grid */}
+        {companies.length > 0 && (
+          <div className="space-y-8">
+            {/* Companies Cards */}
+            <div className={`grid gap-4 ${
+              companies.length === 1 ? 'lg:grid-cols-1 max-w-2xl mx-auto' : 
+              companies.length === 2 ? 'lg:grid-cols-2' : 
+              'lg:grid-cols-3'
+            }`}>
+              {companies.map((company) => {
+                const details = getMockCompanyDetails(company.id);
+                return (
+                  <Card key={company.id} className="border-2 relative">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-2 right-2 z-10"
+                      onClick={() => removeCompany(company.id)}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                    <CardHeader>
+                      <Badge variant="secondary" className="w-fit mb-2">
+                        {company.sector}
+                      </Badge>
+                      <CardTitle className="text-xl">{company.companyName}</CardTitle>
+                      <div className="flex items-center gap-1 text-muted-foreground text-sm">
+                        <MapPin className="w-4 h-4" />
+                        <span>{company.location}</span>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {company.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            {/* Comparison Table - Financial Metrics */}
+            <Card className="border-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-success" />
+                  Métricas Financeiras
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="overflow-x-auto">
+                <table className="w-full min-w-[600px]">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4 font-semibold">Métrica</th>
+                      {companies.map((company) => (
+                        <th key={company.id} className="text-left py-3 px-4 font-semibold">
+                          {company.companyName}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b hover:bg-muted/50">
+                      <td className="py-3 px-4 font-medium">Faturamento Anual</td>
+                      {companies.map((company) => {
+                        const details = getMockCompanyDetails(company.id);
+                        return (
+                          <td key={company.id} className="py-3 px-4">
+                            <div className="flex items-center gap-2">
+                              <TrendingUp className="w-4 h-4 text-success" />
+                              <span className="font-semibold">{details.revenue}</span>
+                            </div>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                    <tr className="border-b hover:bg-muted/50">
+                      <td className="py-3 px-4 font-medium">Margem de Lucro</td>
+                      {companies.map((company) => {
+                        const details = getMockCompanyDetails(company.id);
+                        return (
+                          <td key={company.id} className="py-3 px-4">
+                            <span className="font-semibold">{details.profitMargin}</span>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                    <tr className="border-b hover:bg-muted/50">
+                      <td className="py-3 px-4 font-medium">Taxa de Crescimento</td>
+                      {companies.map((company) => {
+                        const details = getMockCompanyDetails(company.id);
+                        return (
+                          <td key={company.id} className="py-3 px-4">
+                            <Badge variant="secondary">{details.growthRate}</Badge>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                    <tr className="hover:bg-muted/50">
+                      <td className="py-3 px-4 font-medium">Nível de Endividamento</td>
+                      {companies.map((company) => {
+                        const details = getMockCompanyDetails(company.id);
+                        return (
+                          <td key={company.id} className="py-3 px-4">
+                            {getRiskBadge(details.debtLevel)}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+
+            {/* Comparison Table - Operational Metrics */}
+            <Card className="border-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Briefcase className="w-5 h-5 text-secondary" />
+                  Métricas Operacionais
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="overflow-x-auto">
+                <table className="w-full min-w-[600px]">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4 font-semibold">Métrica</th>
+                      {companies.map((company) => (
+                        <th key={company.id} className="text-left py-3 px-4 font-semibold">
+                          {company.companyName}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b hover:bg-muted/50">
+                      <td className="py-3 px-4 font-medium">Número de Funcionários</td>
+                      {companies.map((company) => {
+                        const details = getMockCompanyDetails(company.id);
+                        return (
+                          <td key={company.id} className="py-3 px-4">
+                            <div className="flex items-center gap-2">
+                              <Users className="w-4 h-4 text-secondary" />
+                              <span className="font-semibold">{details.employees}</span>
+                            </div>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                    <tr className="border-b hover:bg-muted/50">
+                      <td className="py-3 px-4 font-medium">Ano de Fundação</td>
+                      {companies.map((company) => {
+                        const details = getMockCompanyDetails(company.id);
+                        return (
+                          <td key={company.id} className="py-3 px-4">
+                            <div className="flex items-center gap-2">
+                              <CalendarDays className="w-4 h-4 text-muted-foreground" />
+                              <span>{details.foundedYear}</span>
+                            </div>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                    <tr className="hover:bg-muted/50">
+                      <td className="py-3 px-4 font-medium">Localização</td>
+                      {companies.map((company) => (
+                        <td key={company.id} className="py-3 px-4">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-muted-foreground" />
+                            <span>{company.location}</span>
+                          </div>
+                        </td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+
+            {/* Comparison Table - Legal Metrics */}
+            <Card className="border-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Scale className="w-5 h-5 text-primary" />
+                  Situação Jurídica
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="overflow-x-auto">
+                <table className="w-full min-w-[600px]">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4 font-semibold">Métrica</th>
+                      {companies.map((company) => (
+                        <th key={company.id} className="text-left py-3 px-4 font-semibold">
+                          {company.companyName}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b hover:bg-muted/50">
+                      <td className="py-3 px-4 font-medium">Status Legal</td>
+                      {companies.map((company) => {
+                        const details = getMockCompanyDetails(company.id);
+                        return (
+                          <td key={company.id} className="py-3 px-4">
+                            <Badge
+                              className={
+                                details.legalStatus === "Aprovado"
+                                  ? "bg-success hover:bg-success"
+                                  : details.legalStatus === "Em revisão"
+                                  ? "bg-warning hover:bg-warning"
+                                  : "bg-muted hover:bg-muted"
+                              }
+                            >
+                              {details.legalStatus}
+                            </Badge>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                    <tr className="border-b hover:bg-muted/50">
+                      <td className="py-3 px-4 font-medium">Nível de Risco</td>
+                      {companies.map((company) => {
+                        const details = getMockCompanyDetails(company.id);
+                        return (
+                          <td key={company.id} className="py-3 px-4">
+                            {getRiskBadge(details.legalRisk)}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                    <tr className="hover:bg-muted/50">
+                      <td className="py-3 px-4 font-medium">Documentação Completa</td>
+                      {companies.map((company) => {
+                        const details = getMockCompanyDetails(company.id);
+                        return (
+                          <td key={company.id} className="py-3 px-4">
+                            {details.documentsComplete ? (
+                              <CheckCircle2 className="w-5 h-5 text-success" />
+                            ) : (
+                              <XCircle className="w-5 h-5 text-destructive" />
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              {companies.map((company) => (
+                <Link
+                  key={company.id}
+                  to={`/marketplace/companies/${company.id}`}
+                  className="flex-1"
+                >
+                  <Button variant="outline" className="w-full">
+                    Ver Detalhes de {company.companyName}
+                  </Button>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  if (isAuthenticated) {
+    return <DashboardLayout>{content}</DashboardLayout>;
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="pt-32 pb-20">{content}</main>
+      <Footer />
+    </div>
+  );
+}

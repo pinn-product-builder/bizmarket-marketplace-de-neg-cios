@@ -1,8 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Building2, MapPin, Users, TrendingUp, ArrowRight } from "lucide-react";
+import { Building2, MapPin, Users, TrendingUp, ArrowRight, GitCompare } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useComparison } from "@/contexts/ComparisonContext";
 
 interface CompanyCardProps {
   id: string;
@@ -23,6 +24,22 @@ export const CompanyCard = ({
   employees,
   description,
 }: CompanyCardProps) => {
+  const { addCompany, isInComparison } = useComparison();
+
+  const handleAddToComparison = () => {
+    addCompany({
+      id,
+      companyName,
+      sector,
+      location,
+      revenue,
+      employees,
+      description,
+    });
+  };
+
+  const inComparison = isInComparison(id);
+
   return (
     <Card className="group hover:shadow-xl transition-all duration-300 overflow-hidden border-2 hover:border-secondary/50">
       <CardHeader className="space-y-3">
@@ -59,12 +76,23 @@ export const CompanyCard = ({
           </div>
         </div>
 
-        <Link to={`/marketplace/companies/${id}`} className="block">
-          <Button variant="secondary" className="w-full group/btn">
-            Ver Detalhes
-            <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+        <div className="flex gap-2">
+          <Link to={`/marketplace/companies/${id}`} className="flex-1">
+            <Button variant="secondary" className="w-full group/btn">
+              Ver Detalhes
+              <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+            </Button>
+          </Link>
+          <Button
+            variant={inComparison ? "default" : "outline"}
+            size="icon"
+            onClick={handleAddToComparison}
+            disabled={inComparison}
+            title={inComparison ? "Já está na comparação" : "Adicionar à comparação"}
+          >
+            <GitCompare className="w-4 h-4" />
           </Button>
-        </Link>
+        </div>
       </CardContent>
     </Card>
   );

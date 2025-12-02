@@ -2,6 +2,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { DashboardLayout } from "@/layouts/DashboardLayout";
 import { CompanyCard } from "@/components/CompanyCard";
+import { ComparisonFloatingBar } from "@/components/ComparisonFloatingBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,9 +15,11 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, SlidersHorizontal, X, FilterX } from "lucide-react";
+import { Search, SlidersHorizontal, X, FilterX, GitCompare } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useComparison } from "@/contexts/ComparisonContext";
+import { Link } from "react-router-dom";
 
 const mockCompanies = [
   {
@@ -84,6 +87,7 @@ export default function Marketplace() {
   const [sortBy, setSortBy] = useState("recent");
   const [showFilters, setShowFilters] = useState(true);
   const { isAuthenticated } = useAuth();
+  const { companies: comparisonCompanies } = useComparison();
 
   // Função para extrair valor numérico do revenue
   const getRevenueValue = (revenue: string): number => {
@@ -200,12 +204,24 @@ export default function Marketplace() {
       <div className={isAuthenticated ? "max-w-7xl mx-auto" : "container mx-auto px-4 lg:px-8"}>
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-4xl lg:text-5xl font-heading font-bold text-primary mb-4">
-            Marketplace de Empresas
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            Explore oportunidades de investimento em empresas consolidadas
-          </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+            <div>
+              <h1 className="text-4xl lg:text-5xl font-heading font-bold text-primary mb-2">
+                Marketplace de Empresas
+              </h1>
+              <p className="text-xl text-muted-foreground">
+                Explore oportunidades de investimento em empresas consolidadas
+              </p>
+            </div>
+            {comparisonCompanies.length > 0 && (
+              <Link to="/marketplace/compare">
+                <Button variant="default" size="lg" className="gap-2 w-full sm:w-auto">
+                  <GitCompare className="w-5 h-5" />
+                  Comparar ({comparisonCompanies.length})
+                </Button>
+              </Link>
+            )}
+          </div>
         </div>
 
         {/* Filters */}
@@ -446,6 +462,9 @@ export default function Marketplace() {
           </div>
         )}
       </div>
+      
+      {/* Floating Comparison Bar */}
+      <ComparisonFloatingBar />
     </div>
   );
 
