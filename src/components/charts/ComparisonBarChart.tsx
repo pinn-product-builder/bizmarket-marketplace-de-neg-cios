@@ -28,6 +28,7 @@ export const ComparisonBarChart = ({
       <BarChart
         data={data}
         margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+        className="transition-all duration-500 ease-in-out"
       >
         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
         <XAxis
@@ -65,6 +66,8 @@ export const ComparisonBarChart = ({
             name={item.name}
             fill={item.color || CHART_COLORS[index % CHART_COLORS.length]}
             radius={[4, 4, 0, 0]}
+            animationDuration={800}
+            animationEasing="ease-in-out"
           />
         ))}
       </BarChart>

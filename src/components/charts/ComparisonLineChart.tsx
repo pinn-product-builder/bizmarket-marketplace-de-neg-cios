@@ -28,6 +28,7 @@ export const ComparisonLineChart = ({
       <LineChart
         data={data}
         margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+        className="transition-all duration-500 ease-in-out"
       >
         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
         <XAxis
@@ -68,6 +69,8 @@ export const ComparisonLineChart = ({
             strokeWidth={2}
             dot={{ r: 4 }}
             activeDot={{ r: 6 }}
+            animationDuration={800}
+            animationEasing="ease-in-out"
           />
         ))}
       </LineChart>
