@@ -9,6 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useComparison } from "@/contexts/ComparisonContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { ComparisonLineChart } from "@/components/charts/ComparisonLineChart";
@@ -395,25 +401,72 @@ export default function CompanyComparison() {
                     {/* Presets */}
                     <div className="space-y-3">
                       <label className="text-sm font-semibold">Presets Rápidos</label>
-                      <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                        {(Object.keys(WEIGHT_PRESETS) as WeightPresetKey[]).map((key) => {
-                          const preset = WEIGHT_PRESETS[key];
-                          return (
-                            <Button
-                              key={key}
-                              variant={selectedPreset === key ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => applyPreset(key)}
-                              className="flex flex-col h-auto py-3 px-2 text-xs transition-all"
-                            >
-                              <span className="font-semibold mb-0.5">{preset.name}</span>
-                              <span className="text-[10px] text-muted-foreground opacity-80 line-clamp-2">
-                                {preset.description}
-                              </span>
-                            </Button>
-                          );
-                        })}
-                      </div>
+                      <TooltipProvider>
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                          {(Object.keys(WEIGHT_PRESETS) as WeightPresetKey[]).map((key) => {
+                            const preset = WEIGHT_PRESETS[key];
+                            return (
+                              <Tooltip key={key} delayDuration={200}>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant={selectedPreset === key ? "default" : "outline"}
+                                    size="sm"
+                                    onClick={() => applyPreset(key)}
+                                    className="flex flex-col h-auto py-3 px-2 text-xs transition-all"
+                                  >
+                                    <span className="font-semibold mb-0.5">{preset.name}</span>
+                                    <span className="text-[10px] text-muted-foreground opacity-80 line-clamp-2">
+                                      {preset.description}
+                                    </span>
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent 
+                                  side="bottom" 
+                                  className="max-w-xs p-4"
+                                  sideOffset={5}
+                                >
+                                  <div className="space-y-2">
+                                    <div>
+                                      <p className="font-semibold text-sm mb-1">{preset.name}</p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {preset.detailedDescription}
+                                      </p>
+                                    </div>
+                                    <div className="pt-2 border-t">
+                                      <p className="text-xs font-semibold mb-1.5">Distribuição:</p>
+                                      <div className="space-y-1 text-xs">
+                                        <div className="flex justify-between">
+                                          <span className="text-muted-foreground">Financeiro:</span>
+                                          <span className="font-medium">{Math.round(preset.weights.financial * 100)}%</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-muted-foreground">Operacional:</span>
+                                          <span className="font-medium">{Math.round(preset.weights.operational * 100)}%</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-muted-foreground">Jurídico:</span>
+                                          <span className="font-medium">{Math.round(preset.weights.legal * 100)}%</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="pt-2 border-t">
+                                      <p className="text-xs font-semibold mb-1.5">Casos de uso:</p>
+                                      <ul className="space-y-1">
+                                        {preset.useCases.map((useCase, index) => (
+                                          <li key={index} className="text-xs text-muted-foreground flex gap-1.5">
+                                            <span className="text-primary">•</span>
+                                            <span>{useCase}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            );
+                          })}
+                        </div>
+                      </TooltipProvider>
                     </div>
 
                     <Separator />
