@@ -57,7 +57,7 @@ export default function SellerDashboard() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         <div className="max-w-7xl mx-auto">
           {/* Welcome */}
           <div className="mb-8">
@@ -118,17 +118,17 @@ export default function SellerDashboard() {
             <div className="lg:col-span-2">
               <Card className="border-2">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <CardTitle className="text-2xl font-heading">Minhas Empresas</CardTitle>
                       <CardDescription>Visão geral das suas empresas</CardDescription>
                     </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" asChild>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button variant="outline" asChild className="w-full sm:w-auto">
                         <Link to="/dashboard/seller/companies">Ver todas</Link>
                       </Button>
                       <Link to="/dashboard/seller/companies/new">
-                        <Button variant="default">
+                        <Button variant="default" className="w-full sm:w-auto">
                           <Plus className="w-4 h-4 mr-2" />
                           Nova Empresa
                         </Button>

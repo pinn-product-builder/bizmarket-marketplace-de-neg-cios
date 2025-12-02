@@ -133,10 +133,10 @@ export default function MyCompanies() {
 
   return (
     <DashboardLayout>
-      <div className="p-8">
+      <div className="p-4 md:p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="mb-8 flex items-center justify-between">
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-3xl lg:text-4xl font-heading font-bold text-primary mb-2">
                 Minhas Empresas
@@ -146,7 +146,7 @@ export default function MyCompanies() {
               </p>
             </div>
             <Link to="/dashboard/seller/companies/new">
-              <Button variant="default" size="lg">
+              <Button variant="default" size="lg" className="w-full sm:w-auto">
                 <Plus className="w-5 h-5 mr-2" />
                 Nova Empresa
               </Button>
@@ -229,8 +229,8 @@ export default function MyCompanies() {
 
           {/* Companies Table */}
           <Card className="border-2">
-            <CardContent className="pt-6">
-              <Table>
+            <CardContent className="pt-6 overflow-x-auto">
+              <Table className="min-w-[600px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Empresa</TableHead>
