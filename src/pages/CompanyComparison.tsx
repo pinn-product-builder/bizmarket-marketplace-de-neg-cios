@@ -25,6 +25,7 @@ import { ComparisonInsights } from "@/components/charts/ComparisonInsights";
 import { CompanyScoreCard } from "@/components/charts/CompanyScoreCard";
 import { ComparisonHistoryDialog } from "@/components/charts/ComparisonHistoryDialog";
 import { ShareComparisonDialog } from "@/components/charts/ShareComparisonDialog";
+import { ExportPDFButton } from "@/components/charts/ExportPDFButton";
 import { getCombinedHistoricalData, CHART_COLORS } from "@/lib/mock-comparison-data";
 import { getAverageBenchmark } from "@/lib/sector-benchmarks";
 import { calculateCompanyScore, DEFAULT_WEIGHTS, CategoryWeights, WEIGHT_PRESETS, WeightPresetKey } from "@/lib/company-scoring";
@@ -431,6 +432,13 @@ export default function CompanyComparison() {
             </div>
             {companies.length > 0 && (
               <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                <ExportPDFButton
+                  companies={companies}
+                  companyScores={companyScores}
+                  customWeights={customWeights}
+                  selectedPreset={selectedPreset}
+                  notes={shareNotes}
+                />
                 <ShareComparisonDialog shareUrl={encodeComparisonState()} />
                 <ComparisonHistoryDialog onLoadComparison={handleLoadFromHistory} />
                 <Button variant="outline" onClick={clearAll} className="flex-1 sm:flex-initial">
@@ -471,8 +479,29 @@ export default function CompanyComparison() {
             {/* Insights Section */}
             <ComparisonInsights companies={companies} />
 
+            {/* Notes Section */}
+            <Card className="border-2">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Save className="w-5 h-5" />
+                  Notas e Observações
+                </CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Adicione observações importantes sobre esta comparação (incluídas no PDF)
+                </p>
+              </CardHeader>
+              <CardContent>
+                <textarea
+                  value={shareNotes}
+                  onChange={(e) => setShareNotes(e.target.value)}
+                  placeholder="Ex: Empresa A tem melhor histórico de crescimento mas Empresa B tem menor risco jurídico..."
+                  className="w-full min-h-[100px] p-3 rounded-md border border-input bg-background text-sm resize-y focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </CardContent>
+            </Card>
+
             {/* Scores Section */}
-            <div>
+            <div id="scores-section">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-heading font-bold flex items-center gap-2">
                   <Trophy className="w-6 h-6 text-warning" />
@@ -666,7 +695,7 @@ export default function CompanyComparison() {
             </div>
 
             {/* Radar Chart - Multi-dimensional Comparison */}
-            <Card className="border-2">
+            <Card className="border-2" id="radar-chart">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <RadarIcon className="w-5 h-5 text-accent" />
@@ -774,7 +803,7 @@ export default function CompanyComparison() {
                   </TabsList>
 
                   <TabsContent value="revenue" className="space-y-4">
-                    <div className="space-y-2">
+                    <div className="space-y-2" id="revenue-chart">
                       <h4 className="text-sm font-semibold flex items-center gap-2">
                         <LineChartIcon className="w-4 h-4" />
                         Evolução do Faturamento Anual (R$ Milhões)
@@ -802,7 +831,7 @@ export default function CompanyComparison() {
                   </TabsContent>
 
                   <TabsContent value="employees" className="space-y-4">
-                    <div className="space-y-2">
+                    <div className="space-y-2" id="employees-chart">
                       <h4 className="text-sm font-semibold flex items-center gap-2">
                         <LineChartIcon className="w-4 h-4" />
                         Crescimento do Quadro de Funcionários
@@ -907,7 +936,7 @@ export default function CompanyComparison() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="overflow-x-auto">
-                <table className="w-full min-w-[600px]">
+                <table className="w-full min-w-[600px]" data-export-table data-table-title="Métricas Financeiras">
                   <thead>
                     <tr className="border-b">
                       <th className="text-left py-3 px-4 font-semibold">Métrica</th>
@@ -980,7 +1009,7 @@ export default function CompanyComparison() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="overflow-x-auto">
-                <table className="w-full min-w-[600px]">
+                <table className="w-full min-w-[600px]" data-export-table data-table-title="Métricas Operacionais">
                   <thead>
                     <tr className="border-b">
                       <th className="text-left py-3 px-4 font-semibold">Métrica</th>
@@ -1045,7 +1074,7 @@ export default function CompanyComparison() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="overflow-x-auto">
-                <table className="w-full min-w-[600px]">
+                <table className="w-full min-w-[600px]" data-export-table data-table-title="Situação Jurídica">
                   <thead>
                     <tr className="border-b">
                       <th className="text-left py-3 px-4 font-semibold">Métrica</th>
