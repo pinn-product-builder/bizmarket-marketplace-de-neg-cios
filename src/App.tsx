@@ -25,6 +25,11 @@ import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import NDAPage from "./pages/legal/NDAPage";
+import RegrasGerais from "./pages/legal/RegrasGerais";
+import TermosServico from "./pages/legal/TermosServico";
+import PoliticaPrivacidade from "./pages/legal/PoliticaPrivacidade";
+import AvisoRisco from "./pages/legal/AvisoRisco";
+import FAQ from "./pages/legal/FAQ";
 import LegalDueDiligence from "./pages/dashboard/seller/LegalDueDiligence";
 import LegalReview from "./pages/dashboard/admin/LegalReview";
 import LegalDashboard from "./pages/dashboard/admin/LegalDashboard";
@@ -68,6 +73,11 @@ const App = () => (
             
             {/* Legal Routes */}
             <Route path="/legal/nda/:ndaId" element={<NDAPage />} />
+            <Route path="/legal/regras-gerais" element={<RegrasGerais />} />
+            <Route path="/legal/termos" element={<TermosServico />} />
+            <Route path="/legal/privacidade" element={<PoliticaPrivacidade />} />
+            <Route path="/legal/aviso-risco" element={<AvisoRisco />} />
+            <Route path="/legal/faq" element={<FAQ />} />
             
             {/* Shared Routes */}
             <Route path="/messages" element={<Messages />} />
