@@ -230,17 +230,26 @@ export default function CompanyComparison() {
   useEffect(() => {
     if (companies.length > 0) {
       const timeoutId = setTimeout(() => {
+        // Extract tags from shareNotes if they start with #
+        const tags = shareNotes
+          .split(/\s+/)
+          .filter(word => word.startsWith("#"))
+          .map(tag => tag.slice(1).toLowerCase())
+          .filter(tag => tag.length > 0);
+        
         saveComparisonToHistory(
           companies.map(c => c.id),
           companies.map(c => c.companyName),
           customWeights,
-          selectedPreset
+          selectedPreset,
+          shareNotes,
+          tags.length > 0 ? tags : undefined
         );
       }, 2000); // Debounce to avoid saving too frequently
 
       return () => clearTimeout(timeoutId);
     }
-  }, [companies, customWeights, selectedPreset]);
+  }, [companies, customWeights, selectedPreset, shareNotes]);
 
   // Load comparison from history
   const handleLoadFromHistory = (item: ComparisonHistoryItem) => {
@@ -494,9 +503,12 @@ export default function CompanyComparison() {
                 <textarea
                   value={shareNotes}
                   onChange={(e) => setShareNotes(e.target.value)}
-                  placeholder="Ex: Empresa A tem melhor histórico de crescimento mas Empresa B tem menor risco jurídico..."
+                  placeholder="Ex: Empresa A tem melhor histórico de crescimento mas Empresa B tem menor risco jurídico... Use #tags para organizar (#tecnologia #saude)"
                   className="w-full min-h-[100px] p-3 rounded-md border border-input bg-background text-sm resize-y focus:outline-none focus:ring-2 focus:ring-ring"
                 />
+                <p className="text-xs text-muted-foreground mt-2">
+                  Dica: Use hashtags (#tecnologia, #saude) para organizar e filtrar comparações no histórico
+                </p>
               </CardContent>
             </Card>
 

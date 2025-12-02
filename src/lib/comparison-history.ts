@@ -8,6 +8,7 @@ export interface ComparisonHistoryItem {
   weights: CategoryWeights;
   presetUsed?: string;
   notes?: string;
+  tags?: string[];
 }
 
 const STORAGE_KEY = "comparison_history";
@@ -31,7 +32,8 @@ export const saveComparisonToHistory = (
   companyNames: string[],
   weights: CategoryWeights,
   presetUsed?: string,
-  notes?: string
+  notes?: string,
+  tags?: string[]
 ): void => {
   try {
     const history = getComparisonHistory();
@@ -44,6 +46,7 @@ export const saveComparisonToHistory = (
       weights,
       presetUsed,
       notes,
+      tags,
     };
 
     // Add to beginning and limit to MAX_HISTORY_ITEMS
@@ -76,6 +79,19 @@ export const updateComparisonNotes = (id: string, notes: string): void => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   } catch (error) {
     console.error("Error updating comparison notes:", error);
+  }
+};
+
+// Update tags for a specific comparison
+export const updateComparisonTags = (id: string, tags: string[]): void => {
+  try {
+    const history = getComparisonHistory();
+    const updated = history.map((item) =>
+      item.id === id ? { ...item, tags } : item
+    );
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  } catch (error) {
+    console.error("Error updating comparison tags:", error);
   }
 };
 
