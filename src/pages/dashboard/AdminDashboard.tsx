@@ -2,6 +2,7 @@ import { DashboardLayout } from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { FeedbackDialog } from "@/components/FeedbackDialog";
 import {
   Building2,
   Users,
@@ -10,6 +11,8 @@ import {
   CheckCircle2,
   XCircle,
   Eye,
+  DollarSign,
+  MessageSquarePlus,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -106,6 +109,29 @@ export default function AdminDashboard() {
                 <p className="text-xs text-muted-foreground mt-1">Requer ação</p>
               </CardContent>
             </Card>
+
+            <Card className="border-2 hover:shadow-lg transition-shadow">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between mb-2">
+                  <DollarSign className="w-8 h-8 text-secondary" />
+                </div>
+                <div className="text-3xl font-bold text-secondary mb-1">R$ 45K</div>
+                <p className="text-sm text-muted-foreground">Receita Mensal</p>
+                <p className="text-xs text-muted-foreground mt-1">+12% vs mês anterior</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Feedback Button */}
+          <div className="flex justify-end mb-4">
+            <FeedbackDialog 
+              trigger={
+                <Button variant="outline" className="gap-2">
+                  <MessageSquarePlus className="w-4 h-4" />
+                  Coletar Feedback
+                </Button>
+              }
+            />
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6">

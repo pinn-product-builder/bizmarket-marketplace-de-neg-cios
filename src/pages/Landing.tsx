@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CompanyCard } from "@/components/CompanyCard";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import { DisclaimerBanner } from "@/components/DisclaimerBanner";
 import {
   Building2,
   Search,
@@ -81,6 +82,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      <DisclaimerBanner />
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-32 hero-gradient overflow-hidden">

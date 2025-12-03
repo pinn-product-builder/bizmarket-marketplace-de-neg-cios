@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/tooltip";
 import { useComparison } from "@/contexts/ComparisonContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSubscription } from "@/contexts/SubscriptionContext";
+import { PaywallDialog } from "@/components/PaywallDialog";
 import { toast } from "sonner";
 import { ComparisonLineChart } from "@/components/charts/ComparisonLineChart";
 import { ComparisonBarChart } from "@/components/charts/ComparisonBarChart";
@@ -152,13 +154,25 @@ const getRiskBadge = (risk: string) => {
 
 export default function CompanyComparison() {
   const { companies, removeCompany, clearAll, setCompanies } = useComparison();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const { canAccessFeature, subscription } = useSubscription();
   const navigate = useNavigate();
   const [yearsFilter, setYearsFilter] = useState<1 | 2 | 3>(3);
   const [customWeights, setCustomWeights] = useState<CategoryWeights>(DEFAULT_WEIGHTS);
   const [showWeightSettings, setShowWeightSettings] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState<WeightPresetKey>("balanced");
   const [shareNotes, setShareNotes] = useState<string>("");
+  const [showPaywall, setShowPaywall] = useState(false);
+
+  // Check subscription access for buyers
+  const hasComparisonAccess = user?.userType !== "buyer" || canAccessFeature("canAccessComparison");
+
+  // Show paywall for buyers without access
+  useEffect(() => {
+    if (isAuthenticated && user?.userType === "buyer" && !canAccessFeature("canAccessComparison") && companies.length > 0) {
+      setShowPaywall(true);
+    }
+  }, [isAuthenticated, user, companies.length, canAccessFeature]);
 
   // Encode comparison state to URL
   const encodeComparisonState = () => {
@@ -1171,7 +1185,17 @@ export default function CompanyComparison() {
   );
 
   if (isAuthenticated) {
-    return <DashboardLayout>{content}</DashboardLayout>;
+    return (
+      <DashboardLayout>
+        {content}
+        <PaywallDialog
+          open={showPaywall}
+          onOpenChange={setShowPaywall}
+          feature="Comparação de Empresas"
+          description="A comparação de empresas é um recurso premium. Assine um plano para analisar empresas lado a lado."
+        />
+      </DashboardLayout>
+    );
   }
 
   return (
@@ -1179,6 +1203,12 @@ export default function CompanyComparison() {
       <Header />
       <main className="pt-32 pb-20">{content}</main>
       <Footer />
+      <PaywallDialog
+        open={showPaywall}
+        onOpenChange={setShowPaywall}
+        feature="Comparação de Empresas"
+        description="A comparação de empresas é um recurso premium. Assine um plano para analisar empresas lado a lado."
+      />
     </div>
   );
 }
