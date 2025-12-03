@@ -108,22 +108,38 @@ export default function TermosServico() {
               </div>
             </section>
 
-            <section>
-              <h2 className="text-2xl font-heading font-semibold mb-4">6. Limitação de Responsabilidade</h2>
+            <section className="border-2 border-warning/30 rounded-lg p-6 bg-warning/5">
+              <h2 className="text-2xl font-heading font-semibold mb-4 flex items-center gap-2">
+                ⚠️ 6. Limitação de Responsabilidade e Isenção
+              </h2>
               <div className="space-y-4 text-muted-foreground">
+                <p className="font-semibold text-foreground">
+                  O BIZMARKET É EXCLUSIVAMENTE UMA PLATAFORMA DE EXPOSIÇÃO DE ANÚNCIOS DE NEGÓCIOS.
+                </p>
                 <p>
-                  O BizMarket atua como intermediário entre compradores e vendedores. Não somos parte das 
-                  transações realizadas através da Plataforma e não garantimos:
+                  Ao utilizar nossa Plataforma, você reconhece e concorda expressamente que:
                 </p>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li>A veracidade, precisão ou completude das informações fornecidas por usuários</li>
-                  <li>O sucesso de qualquer transação</li>
-                  <li>A qualidade, segurança ou legalidade das empresas anunciadas</li>
-                  <li>A capacidade dos usuários de completar transações</li>
+                  <li><strong>NÃO INTERMEDIAMOS NEGOCIAÇÕES:</strong> O BizMarket não participa de nenhuma negociação entre compradores e vendedores</li>
+                  <li><strong>NÃO GARANTIMOS INFORMAÇÕES:</strong> Não verificamos, validamos ou garantimos a veracidade, precisão ou completude das informações fornecidas pelos anunciantes</li>
+                  <li><strong>NÃO REALIZAMOS AVALIAÇÕES:</strong> Não fazemos avaliação financeira, jurídica ou operacional das empresas anunciadas</li>
+                  <li><strong>NÃO ASSESSORAMOS TRANSAÇÕES:</strong> Não prestamos consultoria jurídica, financeira ou de qualquer natureza</li>
+                  <li><strong>NÃO GARANTIMOS RESULTADOS:</strong> O sucesso ou fracasso de qualquer transação é de responsabilidade exclusiva das partes envolvidas</li>
                 </ul>
-                <p className="mt-4">
-                  Em nenhuma circunstância o BizMarket será responsável por danos indiretos, incidentais, 
-                  especiais, consequenciais ou punitivos, incluindo perda de lucros, receitas ou dados.
+                <div className="bg-background p-4 rounded-lg mt-4 border">
+                  <p className="font-semibold text-foreground mb-2">RECOMENDAÇÃO IMPORTANTE:</p>
+                  <p>
+                    Antes de realizar qualquer transação, recomendamos fortemente que você contrate profissionais 
+                    qualificados (advogados, contadores, auditores) para realizar a devida diligência e assessorar 
+                    a negociação. Toda decisão de investimento é de sua exclusiva responsabilidade.
+                  </p>
+                </div>
+                <p className="mt-4 font-semibold">
+                  Em nenhuma circunstância o BizMarket, seus sócios, diretores, funcionários ou afiliados serão 
+                  responsáveis por quaisquer danos diretos, indiretos, incidentais, especiais, consequenciais ou 
+                  punitivos, incluindo, mas não se limitando a, perda de lucros, receitas, dados, oportunidades 
+                  de negócio ou danos morais, decorrentes do uso da Plataforma ou de qualquer transação 
+                  iniciada através dela.
                 </p>
               </div>
             </section>

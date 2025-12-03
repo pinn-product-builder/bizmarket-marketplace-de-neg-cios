@@ -13,6 +13,11 @@ import { AIBadge } from "@/components/ui/ai-badge";
 import { AILoading } from "@/components/ui/ai-loading";
 import { generateDescription } from "@/lib/mock-ai-service";
 
+import { validateCNPJ, formatCNPJ, cleanCNPJ, isValidCNPJFormat, CNPJValidationResult, getCNPJStatusColor, getCNPJStatusLabel } from "@/lib/cnpj-validation";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+
 const SECTORS = [
   "Tecnologia",
   "Varejo",
@@ -33,12 +38,16 @@ const STATES = [
 export default function CompanyWizard() {
   const [currentStep, setCurrentStep] = useState(1);
   const [loadingAI, setLoadingAI] = useState(false);
+  const [loadingCNPJ, setLoadingCNPJ] = useState(false);
+  const [cnpjValidation, setCnpjValidation] = useState<CNPJValidationResult | null>(null);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     companyName: "",
     tradingName: "",
+    cnpj: "",
     sector: "",
     foundationYear: "",
     employees: "",
@@ -51,6 +60,45 @@ export default function CompanyWizard() {
     mainProducts: "",
     competitiveDifferentials: "",
   });
+
+  const handleCNPJValidation = async () => {
+    const cleaned = cleanCNPJ(formData.cnpj);
+    if (cleaned.length !== 14) {
+      toast({
+        title: "CNPJ Inválido",
+        description: "O CNPJ deve conter 14 dígitos.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoadingCNPJ(true);
+    try {
+      const result = await validateCNPJ(formData.cnpj);
+      setCnpjValidation(result);
+      
+      if (result.valid && result.companyName) {
+        handleInputChange("companyName", result.companyName);
+        if (result.fantasyName) {
+          handleInputChange("tradingName", result.fantasyName);
+        }
+      }
+      
+      toast({
+        title: result.valid ? "CNPJ Validado" : "Atenção",
+        description: result.message,
+        variant: result.valid ? "default" : "destructive",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro na validação",
+        description: "Não foi possível validar o CNPJ. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingCNPJ(false);
+    }
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -118,6 +166,59 @@ export default function CompanyWizard() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
+              {/* CNPJ Field with Validation */}
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="cnpj">CNPJ *</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="cnpj"
+                    value={formData.cnpj}
+                    onChange={(e) => {
+                      const formatted = formatCNPJ(e.target.value);
+                      handleInputChange("cnpj", formatted);
+                      setCnpjValidation(null);
+                    }}
+                    placeholder="00.000.000/0000-00"
+                    maxLength={18}
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={handleCNPJValidation}
+                    disabled={loadingCNPJ || cleanCNPJ(formData.cnpj).length !== 14}
+                  >
+                    {loadingCNPJ ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      "Validar"
+                    )}
+                  </Button>
+                </div>
+                {cnpjValidation && (
+                  <div className={`flex items-start gap-2 p-3 rounded-lg ${
+                    cnpjValidation.valid ? "bg-success/10" : "bg-destructive/10"
+                  }`}>
+                    {cnpjValidation.valid ? (
+                      <CheckCircle2 className="w-4 h-4 text-success mt-0.5" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4 text-destructive mt-0.5" />
+                    )}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge variant={cnpjValidation.valid ? "default" : "destructive"}>
+                          {getCNPJStatusLabel(cnpjValidation.status)}
+                        </Badge>
+                      </div>
+                      <p className="text-sm">{cnpjValidation.message}</p>
+                      {cnpjValidation.companyName && (
+                        <p className="text-sm font-medium mt-1">{cnpjValidation.companyName}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="companyName">Razão Social *</Label>
                 <Input
@@ -362,6 +463,30 @@ export default function CompanyWizard() {
                   <li>• Certidões Negativas</li>
                 </ul>
               </div>
+
+              {/* Terms Acceptance */}
+              <div className="border-2 border-warning/30 rounded-lg p-4 bg-warning/5">
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="terms"
+                    checked={acceptedTerms}
+                    onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
+                  />
+                  <div className="flex-1">
+                    <Label htmlFor="terms" className="cursor-pointer">
+                      <span className="font-semibold">Declaro que li e aceito os termos</span>
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Declaro que as informações fornecidas são verdadeiras e que entendo que o BizMarket 
+                      é uma plataforma de exposição, não se responsabilizando pelas negociações ou 
+                      veracidade das informações prestadas.{" "}
+                      <a href="/legal/termos" target="_blank" className="text-primary underline">
+                        Ver Termos de Serviço
+                      </a>
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         );
@@ -436,7 +561,11 @@ export default function CompanyWizard() {
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             ) : (
-              <Button onClick={handleSubmit} variant="default">
+              <Button 
+                onClick={handleSubmit} 
+                variant="default"
+                disabled={!acceptedTerms || (cnpjValidation && !cnpjValidation.valid)}
+              >
                 <Check className="w-4 h-4 mr-2" />
                 Finalizar Cadastro
               </Button>

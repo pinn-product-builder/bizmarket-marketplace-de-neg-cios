@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { NotificationsProvider } from "@/contexts/NotificationsContext";
 import { ComparisonProvider } from "@/contexts/ComparisonContext";
+import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
+import { CookieConsent } from "@/components/CookieConsent";
 import Landing from "./pages/Landing";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
@@ -25,6 +27,7 @@ import PendingCompanies from "./pages/dashboard/admin/PendingCompanies";
 import AdminCompanyDetails from "./pages/dashboard/admin/CompanyDetails";
 import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
+import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
 import NDAPage from "./pages/legal/NDAPage";
 import RegrasGerais from "./pages/legal/RegrasGerais";
@@ -47,51 +50,55 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <NotificationsProvider>
-            <ComparisonProvider>
-              <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/auth/login" element={<Login />} />
-            <Route path="/auth/signup" element={<Signup />} />
-            <Route path="/marketplace" element={<Marketplace />} />
-            <Route path="/marketplace/companies/:id" element={<CompanyDetails />} />
-            <Route path="/marketplace/compare" element={<CompanyComparison />} />
-            
-            {/* Seller Routes */}
-            <Route path="/dashboard/seller" element={<SellerDashboard />} />
-            <Route path="/dashboard/seller/companies" element={<MyCompanies />} />
-            <Route path="/dashboard/seller/companies/new" element={<CompanyWizard />} />
-            <Route path="/dashboard/seller/companies/:id/legal" element={<LegalDueDiligence />} />
-            <Route path="/dashboard/seller/companies/:id/interests" element={<CompanyInterests />} />
-            
-            {/* Buyer Routes */}
-            <Route path="/dashboard/buyer" element={<BuyerDashboard />} />
-            <Route path="/dashboard/buyer/interests" element={<MyInterests />} />
-            
-            {/* Admin Routes */}
-            <Route path="/dashboard/admin" element={<AdminDashboard />} />
-            <Route path="/dashboard/admin/pending" element={<PendingCompanies />} />
-            <Route path="/dashboard/admin/pending/:id" element={<AdminCompanyDetails />} />
-            <Route path="/dashboard/admin/legal" element={<LegalDashboard />} />
-            <Route path="/dashboard/admin/companies/:id/legal" element={<LegalReview />} />
-            <Route path="/dashboard/admin/users" element={<Users />} />
-            <Route path="/dashboard/admin/reports" element={<Reports />} />
-            
-            {/* Legal Routes */}
-            <Route path="/legal/nda/:ndaId" element={<NDAPage />} />
-            <Route path="/legal/regras-gerais" element={<RegrasGerais />} />
-            <Route path="/legal/termos" element={<TermosServico />} />
-            <Route path="/legal/privacidade" element={<PoliticaPrivacidade />} />
-            <Route path="/legal/aviso-risco" element={<AvisoRisco />} />
-            <Route path="/legal/faq" element={<FAQ />} />
-            
-            {/* Shared Routes */}
-            <Route path="/contato" element={<Contato />} />
-            <Route path="/messages" element={<Messages />} />
-            <Route path="/profile" element={<Profile />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-              </Routes>
-            </ComparisonProvider>
+            <SubscriptionProvider>
+              <ComparisonProvider>
+                <Routes>
+                  <Route path="/" element={<Landing />} />
+                  <Route path="/auth/login" element={<Login />} />
+                  <Route path="/auth/signup" element={<Signup />} />
+                  <Route path="/pricing" element={<Pricing />} />
+                  <Route path="/marketplace" element={<Marketplace />} />
+                  <Route path="/marketplace/companies/:id" element={<CompanyDetails />} />
+                  <Route path="/marketplace/compare" element={<CompanyComparison />} />
+                  
+                  {/* Seller Routes */}
+                  <Route path="/dashboard/seller" element={<SellerDashboard />} />
+                  <Route path="/dashboard/seller/companies" element={<MyCompanies />} />
+                  <Route path="/dashboard/seller/companies/new" element={<CompanyWizard />} />
+                  <Route path="/dashboard/seller/companies/:id/legal" element={<LegalDueDiligence />} />
+                  <Route path="/dashboard/seller/companies/:id/interests" element={<CompanyInterests />} />
+                  
+                  {/* Buyer Routes */}
+                  <Route path="/dashboard/buyer" element={<BuyerDashboard />} />
+                  <Route path="/dashboard/buyer/interests" element={<MyInterests />} />
+                  
+                  {/* Admin Routes */}
+                  <Route path="/dashboard/admin" element={<AdminDashboard />} />
+                  <Route path="/dashboard/admin/pending" element={<PendingCompanies />} />
+                  <Route path="/dashboard/admin/pending/:id" element={<AdminCompanyDetails />} />
+                  <Route path="/dashboard/admin/legal" element={<LegalDashboard />} />
+                  <Route path="/dashboard/admin/companies/:id/legal" element={<LegalReview />} />
+                  <Route path="/dashboard/admin/users" element={<Users />} />
+                  <Route path="/dashboard/admin/reports" element={<Reports />} />
+                  
+                  {/* Legal Routes */}
+                  <Route path="/legal/nda/:ndaId" element={<NDAPage />} />
+                  <Route path="/legal/regras-gerais" element={<RegrasGerais />} />
+                  <Route path="/legal/termos" element={<TermosServico />} />
+                  <Route path="/legal/privacidade" element={<PoliticaPrivacidade />} />
+                  <Route path="/legal/aviso-risco" element={<AvisoRisco />} />
+                  <Route path="/legal/faq" element={<FAQ />} />
+                  
+                  {/* Shared Routes */}
+                  <Route path="/contato" element={<Contato />} />
+                  <Route path="/messages" element={<Messages />} />
+                  <Route path="/profile" element={<Profile />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                <CookieConsent />
+              </ComparisonProvider>
+            </SubscriptionProvider>
           </NotificationsProvider>
         </AuthProvider>
       </BrowserRouter>
