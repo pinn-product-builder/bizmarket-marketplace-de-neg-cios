@@ -14,38 +14,102 @@ import {
   Users,
   CheckCircle2,
   ArrowRight,
+  Eye,
+  BadgeCheck,
+  Megaphone,
+  Rocket,
+  CreditCard,
+  Star,
+  Quote,
 } from "lucide-react";
 
-// Mock data
+// Stats atualizados para refletir exposição, não transações
 const stats = [
-  { value: "500+", label: "Empresas Cadastradas" },
-  { value: "R$ 2.5B", label: "Valor em Negociações" },
-  { value: "1,200+", label: "Investidores Ativos" },
-  { value: "95%", label: "Taxa de Satisfação" },
+  { value: "500+", label: "Anúncios Ativos" },
+  { value: "50k+", label: "Visualizações/mês" },
+  { value: "1,200+", label: "Compradores Cadastrados" },
+  { value: "98%", label: "Anúncios Aprovados" },
 ];
 
-const howItWorks = [
+// Como funciona para Vendedores
+const howItWorksSellers = [
   {
     icon: Building2,
-    title: "Cadastre sua Empresa",
-    description: "Vendedores criam perfis detalhados com informações financeiras e documentação completa.",
+    title: "Cadastre seu Negócio",
+    description: "Informe o CNPJ e dados básicos. Validamos automaticamente a regularidade fiscal.",
   },
   {
-    icon: Search,
-    title: "Explore Oportunidades",
-    description: "Compradores filtram e encontram empresas que atendem seus critérios de investimento.",
+    icon: CreditCard,
+    title: "Assine e Seja Aprovado",
+    description: "Escolha seu plano mensal. Nossa equipe revisa e aprova seu anúncio.",
   },
   {
     icon: MessageSquare,
-    title: "Conecte-se e Negocie",
-    description: "Demonstre interesse e negocie diretamente através de nossa plataforma segura.",
+    title: "Receba Interessados",
+    description: "Compradores entram em contato diretamente. Você negocia com autonomia.",
   },
 ];
 
+// Como funciona para Compradores
+const howItWorksBuyers = [
+  {
+    icon: Search,
+    title: "Explore Gratuitamente",
+    description: "Navegue por centenas de negócios à venda. Filtre por setor, região e faturamento.",
+  },
+  {
+    icon: Star,
+    title: "Assine para Mais Acesso",
+    description: "Desbloqueie dados detalhados, comparações e contato direto com vendedores.",
+  },
+  {
+    icon: CheckCircle2,
+    title: "Entre em Contato",
+    description: "Converse diretamente com o vendedor e conduza sua negociação.",
+  },
+];
+
+// Benefícios atualizados e alinhados ao escopo
 const benefits = [
-  { icon: Shield, title: "Segurança Total", description: "Verificação completa de documentos e identidade" },
-  { icon: TrendingUp, title: "Análise de Mercado", description: "Insights e dados para decisões informadas" },
-  { icon: Users, title: "Suporte Dedicado", description: "Equipe especializada disponível 24/7" },
+  { 
+    icon: Eye, 
+    title: "Visibilidade Garantida", 
+    description: "Seu negócio visto por milhares de investidores e compradores ativos" 
+  },
+  { 
+    icon: BadgeCheck, 
+    title: "CNPJ Validado", 
+    description: "Apenas empresas com situação fiscal regular são anunciadas" 
+  },
+  { 
+    icon: Shield, 
+    title: "Curadoria de Qualidade", 
+    description: "Todos os anúncios são revisados pela nossa equipe antes da publicação" 
+  },
+  { 
+    icon: Megaphone, 
+    title: "Impulsionamento", 
+    description: "Destaque seu anúncio para aparecer no topo e receber mais contatos" 
+  },
+];
+
+// Depoimentos mock
+const testimonials = [
+  {
+    quote: "Recebi 15 contatos qualificados no primeiro mês. A plataforma realmente entrega visibilidade.",
+    author: "Carlos M.",
+    role: "Vendedor - Restaurante em SP",
+  },
+  {
+    quote: "Encontrei a empresa perfeita para expandir meu grupo. A ferramenta de comparação foi decisiva.",
+    author: "Ana Paula R.",
+    role: "Investidora",
+  },
+  {
+    quote: "Processo simples e transparente. Em uma semana meu anúncio já estava no ar.",
+    author: "Roberto S.",
+    role: "Vendedor - E-commerce",
+  },
 ];
 
 const featuredCompanies = [
@@ -82,7 +146,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <DisclaimerBanner />
+      <DisclaimerBanner dismissible={false} />
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-32 hero-gradient overflow-hidden">
@@ -94,21 +158,24 @@ export default function Landing() {
         <div className="container mx-auto px-4 lg:px-8 relative z-10">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
             <h1 className="text-white mb-6">
-              Compre ou Venda Empresas com Segurança
+              Anuncie ou Encontre Negócios à Venda
             </h1>
-            <p className="text-xl lg:text-2xl text-white/90 mb-8 font-body leading-relaxed">
-              O marketplace mais confiável do Brasil para conectar vendedores de empresas com investidores qualificados.
+            <p className="text-xl lg:text-2xl text-white/90 mb-4 font-body leading-relaxed">
+              A maior vitrine de empresas à venda do Brasil. Conectamos vendedores a compradores interessados através de anúncios qualificados.
+            </p>
+            <p className="text-lg text-white/70 mb-8">
+              Mais de 1.200 compradores buscando oportunidades todos os meses
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up">
               <Link to="/auth/signup?type=seller">
                 <Button variant="hero" size="lg" className="text-lg font-semibold">
-                  Quero Vender
-                  <ArrowRight className="w-5 h-5" />
+                  Quero Anunciar
+                  <Megaphone className="w-5 h-5" />
                 </Button>
               </Link>
-              <Link to="/auth/signup?type=buyer">
+              <Link to="/marketplace">
                 <Button variant="secondary" size="lg" className="text-lg font-semibold">
-                  Quero Investir
+                  Explorar Negócios
                   <Search className="w-5 h-5" />
                 </Button>
               </Link>
@@ -118,7 +185,7 @@ export default function Landing() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-12 bg-white border-y border-border">
+      <section className="py-12 bg-card border-y border-border">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
@@ -135,42 +202,161 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section id="how-it-works" className="py-20 lg:py-32">
+      {/* Para Quem É - Two Column Section */}
+      <section className="py-20 lg:py-32">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-primary mb-4">Para Quem É o BizMarket?</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Uma plataforma pensada tanto para quem quer vender quanto para quem busca investir
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Card Vendedores */}
+            <Card className="border-2 border-primary/20 hover:border-primary/50 transition-all duration-300 hover:shadow-xl">
+              <CardContent className="p-8">
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+                  <Building2 className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="text-2xl font-heading font-bold mb-4 text-primary">Para Vendedores</h3>
+                <p className="text-muted-foreground mb-6">
+                  Quer vender seu negócio? Anuncie na maior vitrine de empresas do Brasil.
+                </p>
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-center gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0" />
+                    <span>Anuncie a partir de R$ 99/mês</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0" />
+                    <span>CNPJ validado automaticamente</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0" />
+                    <span>Receba contatos de interessados</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0" />
+                    <span>Impulsione para mais visibilidade</span>
+                  </li>
+                </ul>
+                <Link to="/auth/signup?type=seller">
+                  <Button variant="default" size="lg" className="w-full">
+                    Anunciar Minha Empresa
+                    <ArrowRight className="w-5 h-5" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Card Compradores */}
+            <Card className="border-2 border-secondary/20 hover:border-secondary/50 transition-all duration-300 hover:shadow-xl">
+              <CardContent className="p-8">
+                <div className="w-16 h-16 rounded-2xl bg-secondary/10 flex items-center justify-center mb-6">
+                  <TrendingUp className="w-8 h-8 text-secondary" />
+                </div>
+                <h3 className="text-2xl font-heading font-bold mb-4 text-secondary">Para Compradores</h3>
+                <p className="text-muted-foreground mb-6">
+                  Buscando oportunidades de aquisição? Explore centenas de negócios.
+                </p>
+                <ul className="space-y-3 mb-8">
+                  <li className="flex items-center gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0" />
+                    <span>Explore anúncios gratuitamente</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0" />
+                    <span>Assine para contato direto</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0" />
+                    <span>Compare empresas lado a lado</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0" />
+                    <span>Análises com IA para decisões</span>
+                  </li>
+                </ul>
+                <Link to="/marketplace">
+                  <Button variant="secondary" size="lg" className="w-full">
+                    Explorar Negócios
+                    <Search className="w-5 h-5" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works - Vendedores */}
+      <section id="how-it-works" className="py-20 lg:py-32 bg-muted/30">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-primary mb-4">Como Funciona</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Um processo simples e transparente em 3 etapas
+              Processos simples e transparentes para vendedores e compradores
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {howItWorks.map((step, index) => (
-              <Card key={index} className="relative border-2 hover:border-secondary/50 transition-all duration-300 hover:shadow-lg">
-                <CardContent className="pt-8 pb-6 text-center">
-                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-secondary text-white flex items-center justify-center text-xl font-bold shadow-lg">
-                    {index + 1}
-                  </div>
-                  <div className="w-16 h-16 rounded-2xl bg-secondary/10 flex items-center justify-center mx-auto mb-4 mt-2">
-                    <step.icon className="w-8 h-8 text-secondary" />
-                  </div>
-                  <h3 className="text-xl font-heading font-semibold mb-3">{step.title}</h3>
-                  <p className="text-muted-foreground">{step.description}</p>
-                </CardContent>
-              </Card>
-            ))}
+          {/* Para Vendedores */}
+          <div className="mb-16">
+            <h3 className="text-xl font-heading font-semibold text-center mb-8 text-primary">
+              <Building2 className="w-5 h-5 inline mr-2" />
+              Para Vendedores
+            </h3>
+            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              {howItWorksSellers.map((step, index) => (
+                <Card key={index} className="relative border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-lg">
+                  <CardContent className="pt-8 pb-6 text-center">
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center text-xl font-bold shadow-lg">
+                      {index + 1}
+                    </div>
+                    <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4 mt-2">
+                      <step.icon className="w-8 h-8 text-primary" />
+                    </div>
+                    <h4 className="text-xl font-heading font-semibold mb-3">{step.title}</h4>
+                    <p className="text-muted-foreground">{step.description}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Para Compradores */}
+          <div>
+            <h3 className="text-xl font-heading font-semibold text-center mb-8 text-secondary">
+              <Users className="w-5 h-5 inline mr-2" />
+              Para Compradores
+            </h3>
+            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              {howItWorksBuyers.map((step, index) => (
+                <Card key={index} className="relative border-2 hover:border-secondary/50 transition-all duration-300 hover:shadow-lg">
+                  <CardContent className="pt-8 pb-6 text-center">
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-secondary text-white flex items-center justify-center text-xl font-bold shadow-lg">
+                      {index + 1}
+                    </div>
+                    <div className="w-16 h-16 rounded-2xl bg-secondary/10 flex items-center justify-center mx-auto mb-4 mt-2">
+                      <step.icon className="w-8 h-8 text-secondary" />
+                    </div>
+                    <h4 className="text-xl font-heading font-semibold mb-3">{step.title}</h4>
+                    <p className="text-muted-foreground">{step.description}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Featured Companies */}
-      <section className="py-20 lg:py-32 bg-muted/30">
+      <section className="py-20 lg:py-32">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-primary mb-4">Empresas em Destaque</h2>
+            <h2 className="text-primary mb-4">Anúncios em Destaque</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Explore algumas das melhores oportunidades disponíveis
+              Confira algumas das oportunidades disponíveis na plataforma
             </p>
           </div>
 
@@ -183,7 +369,7 @@ export default function Landing() {
           <div className="text-center">
             <Link to="/marketplace">
               <Button variant="secondary" size="lg">
-                Ver Todas as Empresas
+                Ver Todos os Anúncios
                 <ArrowRight className="w-5 h-5" />
               </Button>
             </Link>
@@ -192,27 +378,100 @@ export default function Landing() {
       </section>
 
       {/* Benefits */}
+      <section className="py-20 lg:py-32 bg-muted/30">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-primary mb-4">Por Que Anunciar no BizMarket?</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Credibilidade e visibilidade para seu negócio
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            {benefits.map((benefit, index) => (
+              <Card key={index} className="border-2 hover:border-success/50 transition-all duration-300 hover:shadow-lg">
+                <CardContent className="pt-6 pb-6 text-center">
+                  <div className="w-14 h-14 rounded-2xl bg-success/10 flex items-center justify-center mx-auto mb-4">
+                    <benefit.icon className="w-7 h-7 text-success" />
+                  </div>
+                  <h3 className="text-lg font-heading font-semibold mb-2">{benefit.title}</h3>
+                  <p className="text-sm text-muted-foreground">{benefit.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
       <section className="py-20 lg:py-32">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-primary mb-4">Por Que Escolher o BizMarket?</h2>
+            <h2 className="text-primary mb-4">O Que Dizem Nossos Usuários</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Tecnologia e expertise para negociações seguras
+              Histórias de quem já utilizou a plataforma
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {benefits.map((benefit, index) => (
-              <Card key={index} className="border-2 hover:border-success/50 transition-all duration-300 hover:shadow-lg">
-                <CardContent className="pt-6 pb-6 text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-success/10 flex items-center justify-center mx-auto mb-4">
-                    <benefit.icon className="w-8 h-8 text-success" />
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="border hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-6">
+                  <Quote className="w-8 h-8 text-secondary/30 mb-4" />
+                  <p className="text-foreground mb-6 italic">"{testimonial.quote}"</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
+                      <span className="text-secondary font-semibold">
+                        {testimonial.author.charAt(0)}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm">{testimonial.author}</p>
+                      <p className="text-xs text-muted-foreground">{testimonial.role}</p>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-heading font-semibold mb-3">{benefit.title}</h3>
-                  <p className="text-muted-foreground">{benefit.description}</p>
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Preview */}
+      <section className="py-20 lg:py-32 bg-muted/30">
+        <div className="container mx-auto px-4 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-primary mb-4">Planos Acessíveis</h2>
+            <p className="text-xl text-muted-foreground mb-8">
+              Comece a anunciar ou tenha acesso premium com planos que cabem no seu bolso
+            </p>
+            
+            <div className="grid sm:grid-cols-2 gap-6 mb-8">
+              <Card className="border-2 border-primary/30">
+                <CardContent className="p-6 text-center">
+                  <Building2 className="w-10 h-10 text-primary mx-auto mb-3" />
+                  <h3 className="font-heading font-bold text-lg mb-2">Vendedores</h3>
+                  <p className="text-3xl font-bold text-primary mb-2">R$ 99<span className="text-base font-normal">/mês</span></p>
+                  <p className="text-sm text-muted-foreground">Anuncie sua empresa e receba interessados</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="border-2 border-secondary/30">
+                <CardContent className="p-6 text-center">
+                  <TrendingUp className="w-10 h-10 text-secondary mx-auto mb-3" />
+                  <h3 className="font-heading font-bold text-lg mb-2">Compradores</h3>
+                  <p className="text-3xl font-bold text-secondary mb-2">R$ 49<span className="text-base font-normal">/mês</span></p>
+                  <p className="text-sm text-muted-foreground">Acesso a dados completos e contato direto</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Link to="/pricing">
+              <Button variant="outline" size="lg">
+                Ver Todos os Planos
+                <ArrowRight className="w-5 h-5" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -221,22 +480,24 @@ export default function Landing() {
       <section className="py-20 lg:py-32 hero-gradient">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
+            <Rocket className="w-16 h-16 text-white/80 mx-auto mb-6" />
             <h2 className="text-white mb-6">
-              Pronto Para Começar?
+              Comece Hoje Mesmo
             </h2>
             <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-              Junte-se a milhares de empreendedores e investidores que confiam no BizMarket
+              Vendedores: anuncie sua empresa e alcance milhares de interessados.<br />
+              Compradores: explore oportunidades e encontre o negócio ideal.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/auth/signup">
+              <Link to="/auth/signup?type=seller">
                 <Button variant="hero" size="lg" className="text-lg font-semibold">
-                  Criar Conta Gratuita
-                  <CheckCircle2 className="w-5 h-5" />
+                  Anunciar Minha Empresa
+                  <Megaphone className="w-5 h-5" />
                 </Button>
               </Link>
               <Link to="/marketplace">
                 <Button variant="outline" size="lg" className="text-lg font-semibold bg-white/10 text-white border-white/30 hover:bg-white/20">
-                  Explorar Empresas
+                  Explorar Negócios
                   <Search className="w-5 h-5" />
                 </Button>
               </Link>

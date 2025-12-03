@@ -41,13 +41,13 @@ export const Header = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             <Link to="/marketplace" className="text-foreground hover:text-secondary transition-colors font-medium">
-              Explorar Empresas
+              Explorar Negócios
             </Link>
-            <Link to="#how-it-works" className="text-foreground hover:text-secondary transition-colors font-medium">
+            <Link to="/pricing" className="text-foreground hover:text-secondary transition-colors font-medium">
+              Planos
+            </Link>
+            <Link to="/#how-it-works" className="text-foreground hover:text-secondary transition-colors font-medium">
               Como Funciona
-            </Link>
-            <Link to="#about" className="text-foreground hover:text-secondary transition-colors font-medium">
-              Sobre
             </Link>
             <Link to="/contato" className="text-foreground hover:text-secondary transition-colors font-medium">
               Contato
@@ -115,21 +115,21 @@ export const Header = () => {
                 className="text-foreground hover:text-secondary transition-colors font-medium py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Explorar Empresas
+                Explorar Negócios
               </Link>
               <Link
-                to="#how-it-works"
+                to="/pricing"
+                className="text-foreground hover:text-secondary transition-colors font-medium py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Planos
+              </Link>
+              <Link
+                to="/#how-it-works"
                 className="text-foreground hover:text-secondary transition-colors font-medium py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Como Funciona
-              </Link>
-              <Link
-                to="#about"
-                className="text-foreground hover:text-secondary transition-colors font-medium py-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Sobre
               </Link>
               <Link
                 to="/contato"
