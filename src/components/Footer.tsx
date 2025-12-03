@@ -125,7 +125,7 @@ export const Footer = () => {
           <div className="flex flex-col gap-6">
             {/* Copyright and Links */}
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-primary-foreground/60">
-              <p>© 2024 BizMarket. Todos os direitos reservados.</p>
+              <p>© {new Date().getFullYear()} BizMarket. Todos os direitos reservados.</p>
               <div className="flex gap-6">
                 <Link to="/legal/termos" className="hover:text-primary-foreground transition-colors">
                   Termos de Uso
