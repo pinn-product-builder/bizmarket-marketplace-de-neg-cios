@@ -135,12 +135,16 @@ export default function Login() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Senha</Label>
-                  <Link
-                    to="/auth/forgot-password"
+                  <button
+                    type="button"
+                    onClick={() => toast({
+                      title: "Recuperação de senha",
+                      description: "Em ambiente de demonstração, use a senha 'demo123' para todas as contas.",
+                    })}
                     className="text-sm text-secondary hover:underline"
                   >
                     Esqueceu a senha?
-                  </Link>
+                  </button>
                 </div>
                 <Input
                   id="password"

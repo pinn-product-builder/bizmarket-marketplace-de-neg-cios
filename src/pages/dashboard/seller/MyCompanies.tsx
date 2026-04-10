@@ -287,14 +287,21 @@ export default function MyCompanies() {
                                 Due Diligence
                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => toast({
+                                title: "Edição",
+                                description: `Abrindo editor para ${company.name}...`,
+                              })}
+                            >
                               <Edit className="w-4 h-4 mr-2" />
                               Editar
                             </DropdownMenuItem>
                             {company.interests > 0 && (
-                              <DropdownMenuItem>
-                                <MessageSquare className="w-4 h-4 mr-2" />
-                                Ver Interessados ({company.interests})
+                              <DropdownMenuItem asChild>
+                                <Link to={`/dashboard/seller/companies/${company.id}/interests`}>
+                                  <MessageSquare className="w-4 h-4 mr-2" />
+                                  Ver Interessados ({company.interests})
+                                </Link>
                               </DropdownMenuItem>
                             )}
                             <DropdownMenuSeparator />
