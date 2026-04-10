@@ -173,13 +173,17 @@ export default function SellerDashboard() {
                         </div>
 
                         <div className="flex gap-2">
-                          <Button variant="outline" size="sm" className="flex-1">
-                            Editar
-                          </Button>
-                          {company.interests > 0 && (
-                            <Button variant="default" size="sm" className="flex-1">
-                              Ver Interessados ({company.interests})
+                          <Link to={`/dashboard/seller/companies`}>
+                            <Button variant="outline" size="sm">
+                              Gerenciar
                             </Button>
+                          </Link>
+                          {company.interests > 0 && (
+                            <Link to={`/dashboard/seller/companies/${company.id}/interests`}>
+                              <Button variant="default" size="sm">
+                                Ver Interessados ({company.interests})
+                              </Button>
+                            </Link>
                           )}
                         </div>
                       </CardContent>
