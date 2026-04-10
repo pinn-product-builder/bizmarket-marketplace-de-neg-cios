@@ -12,7 +12,7 @@ import { AISuggestionCard } from "@/components/ui/ai-suggestion-card";
 import { AILoading } from "@/components/ui/ai-loading";
 import { generateChatResponse } from "@/lib/mock-ai-service";
 
-const mockConversations = [
+const initialConversations = [
   {
     id: "1",
     name: "João Silva",
@@ -39,34 +39,39 @@ const mockConversations = [
   },
 ];
 
-const mockMessages = [
-  {
-    id: "1",
-    sender: "other",
-    text: "Olá! Tenho muito interesse na sua empresa.",
-    timestamp: "10:20",
-  },
-  {
-    id: "2",
-    sender: "me",
-    text: "Olá! Que bom! O que gostaria de saber?",
-    timestamp: "10:25",
-  },
-  {
-    id: "3",
-    sender: "other",
-    text: "Quando podemos agendar uma reunião?",
-    timestamp: "10:30",
-  },
-];
+const initialMessages: Record<string, Array<{ id: string; sender: string; text: string; timestamp: string }>> = {
+  "1": [
+    { id: "1", sender: "other", text: "Olá! Tenho muito interesse na sua empresa.", timestamp: "10:20" },
+    { id: "2", sender: "me", text: "Olá! Que bom! O que gostaria de saber?", timestamp: "10:25" },
+    { id: "3", sender: "other", text: "Quando podemos agendar uma reunião?", timestamp: "10:30" },
+  ],
+  "2": [
+    { id: "1", sender: "me", text: "Aqui estão as informações solicitadas sobre o faturamento.", timestamp: "14:00" },
+    { id: "2", sender: "other", text: "Obrigado pelas informações!", timestamp: "14:15" },
+  ],
+  "3": [
+    { id: "1", sender: "other", text: "Boa tarde! Vi o anúncio da empresa no marketplace.", timestamp: "09:00" },
+    { id: "2", sender: "other", text: "Gostaria de ver os documentos", timestamp: "09:05" },
+  ],
+};
 
 export default function Messages() {
-  const [selectedChat, setSelectedChat] = useState(mockConversations[0]);
+  const [conversations, setConversations] = useState(initialConversations);
+  const [selectedChat, setSelectedChat] = useState(conversations[0]);
+  const [allMessages, setAllMessages] = useState(initialMessages);
   const [messageText, setMessageText] = useState("");
   const [showChat, setShowChat] = useState(false);
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
   const [loadingAI, setLoadingAI] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const isMobile = useIsMobile();
+
+  const currentMessages = allMessages[selectedChat.id] || [];
+
+  const filteredConversations = conversations.filter(c =>
+    c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.companyName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const getInitials = (name: string) => {
     return name
@@ -78,14 +83,45 @@ export default function Messages() {
   };
 
   const handleSendMessage = () => {
-    if (messageText.trim()) {
-      // Logic to send message
-      setMessageText("");
-    }
+    if (!messageText.trim()) return;
+
+    const now = new Date();
+    const timestamp = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    
+    const newMessage = {
+      id: `msg-${Date.now()}`,
+      sender: "me",
+      text: messageText.trim(),
+      timestamp,
+    };
+
+    // Add message to current conversation
+    setAllMessages(prev => ({
+      ...prev,
+      [selectedChat.id]: [...(prev[selectedChat.id] || []), newMessage],
+    }));
+
+    // Update last message in conversation list
+    setConversations(prev =>
+      prev.map(c =>
+        c.id === selectedChat.id
+          ? { ...c, lastMessage: messageText.trim(), timestamp, unread: 0 }
+          : c
+      )
+    );
+
+    setMessageText("");
+    setAiSuggestion(null);
   };
 
-  const handleSelectChat = (conversation: typeof mockConversations[0]) => {
+  const handleSelectChat = (conversation: typeof conversations[0]) => {
     setSelectedChat(conversation);
+    // Clear unread count
+    setConversations(prev =>
+      prev.map(c =>
+        c.id === conversation.id ? { ...c, unread: 0 } : c
+      )
+    );
     if (isMobile) {
       setShowChat(true);
     }
@@ -96,11 +132,11 @@ export default function Messages() {
   };
 
   const handleAISuggest = async () => {
-    if (mockMessages.length === 0) return;
+    if (currentMessages.length === 0) return;
     
     setLoadingAI(true);
     try {
-      const lastMessage = mockMessages[mockMessages.length - 1];
+      const lastMessage = currentMessages[currentMessages.length - 1];
       const suggestion = await generateChatResponse({
         lastMessage: lastMessage.text,
         companyName: selectedChat.companyName,
@@ -126,24 +162,29 @@ export default function Messages() {
 
   return (
     <DashboardLayout>
-      <div className="h-screen flex flex-col">
-        <div className="border-b p-6">
-          <h1 className="text-3xl font-heading font-bold text-primary">Mensagens</h1>
+      <div className="flex flex-col" style={{ height: "calc(100vh - 0px)" }}>
+        <div className="border-b p-4 md:p-6">
+          <h1 className="text-2xl md:text-3xl font-heading font-bold text-primary">Mensagens</h1>
           <p className="text-muted-foreground mt-1">Converse com compradores e vendedores</p>
         </div>
 
         <div className="flex-1 flex overflow-hidden">
           {/* Conversations List */}
-          <Card className={`w-full md:w-80 border-r rounded-none ${isMobile && showChat ? 'hidden' : 'block'}`}>
+          <Card className={`w-full md:w-80 border-r rounded-none flex-shrink-0 ${isMobile && showChat ? 'hidden' : 'flex flex-col'}`}>
             <div className="p-4 border-b">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input placeholder="Buscar conversas..." className="pl-9" />
+                <Input 
+                  placeholder="Buscar conversas..." 
+                  className="pl-9"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
               </div>
             </div>
 
-            <ScrollArea className="h-[calc(100vh-180px)]">
-              {mockConversations.map((conversation) => (
+            <ScrollArea className="flex-1">
+              {filteredConversations.map((conversation) => (
                 <div
                   key={conversation.id}
                   onClick={() => handleSelectChat(conversation)}
@@ -162,19 +203,24 @@ export default function Messages() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
                         <p className="font-semibold text-sm truncate">{conversation.name}</p>
-                        <span className="text-xs text-muted-foreground">{conversation.timestamp}</span>
+                        <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">{conversation.timestamp}</span>
                       </div>
                       <p className="text-xs text-muted-foreground mb-1">{conversation.companyName}</p>
                       <p className="text-sm text-muted-foreground truncate">{conversation.lastMessage}</p>
                     </div>
                     {conversation.unread > 0 && (
-                      <Badge className="bg-primary text-primary-foreground h-5 w-5 flex items-center justify-center p-0 text-xs">
+                      <Badge className="bg-primary text-primary-foreground h-5 w-5 flex items-center justify-center p-0 text-xs flex-shrink-0">
                         {conversation.unread}
                       </Badge>
                     )}
                   </div>
                 </div>
               ))}
+              {filteredConversations.length === 0 && (
+                <div className="p-8 text-center text-muted-foreground text-sm">
+                  Nenhuma conversa encontrada
+                </div>
+              )}
             </ScrollArea>
           </Card>
 
@@ -201,9 +247,9 @@ export default function Messages() {
             </div>
 
             {/* Messages */}
-            <ScrollArea className="flex-1 p-6">
+            <ScrollArea className="flex-1 p-4 md:p-6">
               <div className="space-y-4">
-                {mockMessages.map((message) => (
+                {currentMessages.map((message) => (
                   <div
                     key={message.id}
                     className={`flex ${message.sender === "me" ? "justify-end" : "justify-start"}`}
@@ -228,6 +274,11 @@ export default function Messages() {
                     </div>
                   </div>
                 ))}
+                {currentMessages.length === 0 && (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <p>Nenhuma mensagem ainda. Comece a conversa!</p>
+                  </div>
+                )}
               </div>
             </ScrollArea>
 
@@ -242,14 +293,14 @@ export default function Messages() {
                 />
               )}
               
-              {loadingAI && <AILoading message="Gerando sugestão de resposta..." />}
+              {loadingAI && !aiSuggestion && <AILoading message="Gerando sugestão de resposta..." />}
               
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={handleAISuggest}
-                  disabled={loadingAI || mockMessages.length === 0}
+                  disabled={loadingAI || currentMessages.length === 0}
                   title="Sugerir resposta com IA"
                 >
                   <Sparkles className="w-4 h-4" />
@@ -258,9 +309,9 @@ export default function Messages() {
                   placeholder="Digite sua mensagem..."
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                  onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSendMessage()}
                 />
-                <Button onClick={handleSendMessage}>
+                <Button onClick={handleSendMessage} disabled={!messageText.trim()}>
                   <Send className="w-4 h-4" />
                 </Button>
               </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { DashboardLayout } from "@/layouts/DashboardLayout";
@@ -43,6 +43,121 @@ import { AIBadge } from "@/components/ui/ai-badge";
 import { AILoading } from "@/components/ui/ai-loading";
 import { generateExecutiveSummary, suggestInterestMessage } from "@/lib/mock-ai-service";
 
+// Mock companies database matching marketplace data
+const companiesDB: Record<string, {
+  companyName: string;
+  tradingName: string;
+  sector: string;
+  description: string;
+  annualRevenue: number;
+  foundationYear: number;
+  employees: number;
+  locationState: string;
+  locationCity: string;
+  reasonForSale: string;
+  askingPrice: number;
+  viewsCount: number;
+  mainProducts: string;
+  competitiveDifferentials: string;
+}> = {
+  "1": {
+    companyName: "TechFlow Solutions",
+    tradingName: "TechFlow",
+    sector: "Tecnologia",
+    description: "A TechFlow Solutions é uma empresa consolidada no mercado de desenvolvimento de software B2B, com uma base sólida de clientes corporativos e um histórico de crescimento consistente. Nossa expertise inclui desenvolvimento de sistemas web, aplicativos móveis e soluções de integração empresarial.",
+    annualRevenue: 5000000,
+    foundationYear: 2015,
+    employees: 45,
+    locationState: "SP",
+    locationCity: "São Paulo",
+    reasonForSale: "Os sócios fundadores estão buscando novos desafios e desejam passar o negócio para empreendedores que possam levar a empresa ao próximo nível de crescimento.",
+    askingPrice: 15000000,
+    viewsCount: 342,
+    mainProducts: "Sistemas web, aplicativos móveis, APIs e integrações",
+    competitiveDifferentials: "Time altamente qualificado, metodologia ágil comprovada, clientes recorrentes com contratos de longo prazo",
+  },
+  "2": {
+    companyName: "EcoGreen Logistics",
+    tradingName: "EcoGreen",
+    sector: "Logística",
+    description: "Rede de logística sustentável com frota própria e contratos de longo prazo com grandes varejistas. Referência em entregas ecológicas com veículos elétricos e rotas otimizadas por IA.",
+    annualRevenue: 12000000,
+    foundationYear: 2018,
+    employees: 120,
+    locationState: "RJ",
+    locationCity: "Rio de Janeiro",
+    reasonForSale: "Necessidade de capital para expansão nacional. Os sócios buscam um investidor estratégico.",
+    askingPrice: 35000000,
+    viewsCount: 215,
+    mainProducts: "Logística last-mile, armazenagem, fulfillment para e-commerce",
+    competitiveDifferentials: "Frota 100% elétrica, certificação ISO 14001, contratos com grandes varejistas",
+  },
+  "3": {
+    companyName: "Bella Vita Café",
+    tradingName: "Bella Vita",
+    sector: "Alimentação",
+    description: "Rede de cafeterias premium com 5 unidades próprias e modelo de franquia em expansão. Marca reconhecida por qualidade artesanal e experiência diferenciada.",
+    annualRevenue: 3000000,
+    foundationYear: 2017,
+    employees: 35,
+    locationState: "MG",
+    locationCity: "Belo Horizonte",
+    reasonForSale: "Sócios desejam focar em novo empreendimento. Empresa estável e lucrativa pronta para escalar.",
+    askingPrice: 8000000,
+    viewsCount: 189,
+    mainProducts: "Cafés especiais, doces artesanais, brunch premium",
+    competitiveDifferentials: "Marca consolidada, modelo de franquia validado, fornecedores exclusivos de grãos",
+  },
+  "4": {
+    companyName: "HealthPlus Clínicas",
+    tradingName: "HealthPlus",
+    sector: "Saúde",
+    description: "Rede de clínicas médicas especializadas com equipamentos modernos e corpo clínico qualificado. Opera com 8 unidades oferecendo consultas, exames e diagnósticos.",
+    annualRevenue: 8000000,
+    foundationYear: 2015,
+    employees: 80,
+    locationState: "PR",
+    locationCity: "Curitiba",
+    reasonForSale: "Fundador em processo de aposentadoria. Busca sucessor para dar continuidade ao legado.",
+    askingPrice: 22000000,
+    viewsCount: 276,
+    mainProducts: "Consultas médicas, exames laboratoriais, diagnósticos por imagem",
+    competitiveDifferentials: "8 unidades estratégicas, convênios com principais operadoras, 30.000 atendimentos/mês",
+  },
+  "5": {
+    companyName: "AutoParts Express",
+    tradingName: "AutoParts",
+    sector: "Comércio",
+    description: "Distribuidora de autopeças com ampla rede de fornecedores e presença em 3 estados. Referência no mercado de reposição automotiva com entrega rápida.",
+    annualRevenue: 15000000,
+    foundationYear: 2012,
+    employees: 95,
+    locationState: "RS",
+    locationCity: "Porto Alegre",
+    reasonForSale: "Oportunidade de fusão com player maior. Sócios buscam capitalizar o valor construído.",
+    askingPrice: 45000000,
+    viewsCount: 312,
+    mainProducts: "Autopeças originais e paralelas, acessórios automotivos, lubrificantes",
+    competitiveDifferentials: "Parceria com 50+ marcas, centro de distribuição próprio, entrega em 48h para todo Brasil",
+  },
+  "6": {
+    companyName: "EduTech Academy",
+    tradingName: "EduTech",
+    sector: "Educação",
+    description: "Plataforma de ensino online com cursos profissionalizantes e mais de 10.000 alunos ativos. Tecnologia proprietária e conteúdo exclusivo.",
+    annualRevenue: 4000000,
+    foundationYear: 2019,
+    employees: 60,
+    locationState: "DF",
+    locationCity: "Brasília",
+    reasonForSale: "Sócios técnicos buscam investidor com expertise em crescimento e marketing digital.",
+    askingPrice: 12000000,
+    viewsCount: 198,
+    mainProducts: "Cursos online, certificações profissionais, treinamentos corporativos",
+    competitiveDifferentials: "Plataforma proprietária, +10.000 alunos ativos, taxa de conclusão de 78%",
+  },
+};
+
 export default function CompanyDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -54,32 +169,13 @@ export default function CompanyDetails() {
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [loadingSuggestion, setLoadingSuggestion] = useState(false);
 
-  // Legal module data
   const companyId = id || "1";
+  const company = companiesDB[companyId] || companiesDB["1"];
+
+  // Legal module data
   const existingNDA = getNDAByCompanyAndBuyer(companyId, user?.id || "");
   const ddChecklist = getDDChecklistByCompany(companyId);
   const hasSignedNDA = existingNDA?.status === "signed";
-
-  // Mock data - will be replaced with real data from Supabase
-  const company = {
-    companyName: "TechFlow Solutions",
-    tradingName: "TechFlow",
-    sector: "Tecnologia",
-    description:
-      "A TechFlow Solutions é uma empresa consolidada no mercado de desenvolvimento de software B2B, com uma base sólida de clientes corporativos e um histórico de crescimento consistente. Nossa expertise inclui desenvolvimento de sistemas web, aplicativos móveis e soluções de integração empresarial.",
-    annualRevenue: 5000000,
-    foundationYear: 2015,
-    employees: 45,
-    locationState: "São Paulo",
-    locationCity: "São Paulo",
-    reasonForSale:
-      "Os sócios fundadores estão buscando novos desafios e desejam passar o negócio para empreendedores que possam levar a empresa ao próximo nível de crescimento.",
-    askingPrice: 15000000,
-    viewsCount: 342,
-    mainProducts: "Sistemas web, aplicativos móveis, APIs e integrações",
-    competitiveDifferentials:
-      "Time altamente qualificado, metodologia ágil comprovada, clientes recorrentes com contratos de longo prazo",
-  };
 
   const handleInterestClick = () => {
     if (!isAuthenticated) {
@@ -95,7 +191,6 @@ export default function CompanyDetails() {
       return;
     }
     setIsInterestDialogOpen(true);
-    // Auto-suggest message when dialog opens
     handleSuggestMessage();
   };
 
@@ -137,7 +232,6 @@ export default function CompanyDetails() {
       return;
     }
 
-    // Create NDA if doesn't exist
     let nda = existingNDA;
     if (!nda) {
       nda = createMockNDA(companyId, user.id, "seller-1");
@@ -147,7 +241,6 @@ export default function CompanyDetails() {
       });
     }
 
-    // Navigate to NDA page
     navigate(`/legal/nda/${nda.id}`);
   };
 
@@ -173,10 +266,50 @@ export default function CompanyDetails() {
     };
     
     loadSummary();
-  }, []);
+  }, [companyId]);
+
+  const interestDialog = (
+    <Dialog open={isInterestDialogOpen} onOpenChange={setIsInterestDialogOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Demonstrar Interesse</DialogTitle>
+          <DialogDescription>
+            Envie uma mensagem para o vendedor demonstrando seu interesse em {company.companyName}.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          {loadingSuggestion && <AILoading message="Gerando mensagem sugerida..." />}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="message">Mensagem</Label>
+              <AIBadge />
+            </div>
+            <Textarea
+              id="message"
+              placeholder="Conte um pouco sobre seu interesse e objetivos..."
+              value={interestMessage}
+              onChange={(e) => setInterestMessage(e.target.value)}
+              rows={8}
+            />
+            <p className="text-xs text-muted-foreground">
+              💡 Uma mensagem sugerida pela IA foi gerada automaticamente. Sinta-se à vontade para editá-la.
+            </p>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setIsInterestDialogOpen(false)}>
+            Cancelar
+          </Button>
+          <Button onClick={handleSendInterest} disabled={!interestMessage.trim()}>
+            Enviar Interesse
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 
   const content = (
-    <div className={isAuthenticated ? "p-8" : ""}>
+    <div className={isAuthenticated ? "p-4 md:p-8" : ""}>
       <div className={isAuthenticated ? "max-w-6xl mx-auto" : "container mx-auto px-4 lg:px-8 max-w-6xl"}>
         {/* Back Button */}
         <Link
@@ -188,10 +321,10 @@ export default function CompanyDetails() {
         </Link>
 
         {/* Header */}
-        <div className="bg-white border-2 border-border rounded-xl p-8 mb-6 shadow-lg">
-          <div className="flex items-start justify-between mb-6">
+        <div className="bg-card border-2 border-border rounded-xl p-6 md:p-8 mb-6 shadow-lg">
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex flex-wrap items-center gap-3 mb-4">
                 <Badge variant="secondary" className="text-sm">
                   {company.sector}
                 </Badge>
@@ -253,7 +386,7 @@ export default function CompanyDetails() {
           </div>
 
           <Button size="lg" className="w-full" variant="default" onClick={handleInterestClick}>
-            <MessageSquare className="w-5 h-5" />
+            <MessageSquare className="w-5 h-5 mr-2" />
             Demonstrar Interesse
           </Button>
         </div>
@@ -446,44 +579,7 @@ export default function CompanyDetails() {
     return (
       <>
         <DashboardLayout>{content}</DashboardLayout>
-        {/* Interest Dialog */}
-        <Dialog open={isInterestDialogOpen} onOpenChange={setIsInterestDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Demonstrar Interesse</DialogTitle>
-              <DialogDescription>
-                Envie uma mensagem para o vendedor demonstrando seu interesse nesta empresa.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              {loadingSuggestion && <AILoading message="Gerando mensagem sugerida..." />}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="message">Mensagem</Label>
-                  <AIBadge />
-                </div>
-                <Textarea
-                  id="message"
-                  placeholder="Conte um pouco sobre seu interesse e objetivos..."
-                  value={interestMessage}
-                  onChange={(e) => setInterestMessage(e.target.value)}
-                  rows={8}
-                />
-                <p className="text-xs text-muted-foreground">
-                  💡 Uma mensagem sugerida pela IA foi gerada automaticamente. Sinta-se à vontade para editá-la.
-                </p>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsInterestDialogOpen(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={handleSendInterest}>
-                Enviar Interesse
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        {interestDialog}
       </>
     );
   }
@@ -493,45 +589,7 @@ export default function CompanyDetails() {
       <Header />
       <main className="pt-32 pb-20">{content}</main>
       <Footer />
-      
-      {/* Interest Dialog */}
-      <Dialog open={isInterestDialogOpen} onOpenChange={setIsInterestDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Demonstrar Interesse</DialogTitle>
-            <DialogDescription>
-              Envie uma mensagem para o vendedor demonstrando seu interesse nesta empresa.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            {loadingSuggestion && <AILoading message="Gerando mensagem sugerida..." />}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="message">Mensagem</Label>
-                <AIBadge />
-              </div>
-              <Textarea
-                id="message"
-                placeholder="Conte um pouco sobre seu interesse e objetivos..."
-                value={interestMessage}
-                onChange={(e) => setInterestMessage(e.target.value)}
-                rows={8}
-              />
-              <p className="text-xs text-muted-foreground">
-                💡 Uma mensagem sugerida pela IA foi gerada automaticamente. Sinta-se à vontade para editá-la.
-              </p>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsInterestDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSendInterest}>
-              Enviar Interesse
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {interestDialog}
     </div>
   );
 }

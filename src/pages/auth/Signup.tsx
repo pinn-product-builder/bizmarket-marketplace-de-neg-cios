@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Building2, ArrowLeft, ShoppingBag, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Signup() {
   const [searchParams] = useSearchParams();
@@ -17,20 +18,52 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
-    // TODO: Integrate with Supabase Auth when Lovable Cloud is enabled
-    setTimeout(() => {
+    
+    if (!fullName || !email || !password) {
       toast({
-        title: "Atenção",
-        description: "Lovable Cloud precisa estar habilitado para autenticação funcionar.",
+        title: "Campos obrigatórios",
+        description: "Preencha todos os campos para criar sua conta.",
         variant: "destructive",
       });
+      return;
+    }
+
+    if (password.length < 8) {
+      toast({
+        title: "Senha muito curta",
+        description: "A senha deve ter pelo menos 8 caracteres.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    // Simulate account creation with demo system
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // For demo: auto-login with the matching demo account type
+    const demoEmail = userType === "seller" ? "vendedor@demo.com" : "comprador@demo.com";
+    
+    try {
+      await login(demoEmail, "demo123");
+      toast({
+        title: "Conta criada com sucesso!",
+        description: `Bem-vindo ao BizMarket, ${fullName}! (Ambiente de demonstração - logado como ${userType === "seller" ? "vendedor" : "comprador"} demo)`,
+      });
+    } catch {
+      toast({
+        title: "Conta criada!",
+        description: "Sua conta foi criada. Use as credenciais demo para acessar.",
+      });
+      navigate("/auth/login");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -143,11 +176,11 @@ export default function Signup() {
 
               <p className="text-xs text-muted-foreground text-center">
                 Ao criar uma conta, você concorda com nossos{" "}
-                <Link to="/terms" className="text-secondary hover:underline">
+                <Link to="/legal/termos" className="text-secondary hover:underline">
                   Termos de Uso
                 </Link>{" "}
                 e{" "}
-                <Link to="/privacy" className="text-secondary hover:underline">
+                <Link to="/legal/privacidade" className="text-secondary hover:underline">
                   Política de Privacidade
                 </Link>
               </p>
@@ -158,6 +191,13 @@ export default function Signup() {
               <Link to="/auth/login" className="text-secondary hover:underline font-medium">
                 Entrar
               </Link>
+            </div>
+
+            {/* Demo Notice */}
+            <div className="mt-4 text-center">
+              <p className="text-xs text-muted-foreground bg-muted/50 inline-block px-3 py-1.5 rounded-lg">
+                🎭 Ambiente de demonstração — o cadastro simulará login com conta demo
+              </p>
             </div>
           </CardContent>
         </Card>
